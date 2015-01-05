@@ -2,6 +2,7 @@
 
 - Added test of the variadic function
 - Removed an unnecessary allocation of values in instantiation of the variadic foreign function. Variadic function always re-allocates them on each invocation
+- Removed unused class `_FfiTypes`
 - Renamed method `exec` to `invoke` in `ForeignFunction`
 
 ## 0.0.2

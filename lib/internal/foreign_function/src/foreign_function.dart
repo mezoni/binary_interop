@@ -495,35 +495,6 @@ class _Context {
   List<BinaryObject> variableTypeObjects;
 }
 
-// TODO: Remove
-class _FfiTypes2 {
-  static const int DOUBLE = 0;
-
-  static const int FLOAT = 1;
-
-  static const int POINTER = 2;
-
-  static const int SINT16 = 3;
-
-  static const int SINT32 = 4;
-
-  static const int SINT64 = 5;
-
-  static const int SINT8 = 6;
-
-  static const int UINT16 = 7;
-
-  static const int UINT32 = 8;
-
-  static const int UINT64 = 9;
-
-  static const int UINT8 = 10;
-
-  static const int VOID = 11;
-
-  static const int LAST = VOID + 1;
-}
-
 class _Values {
   BinaryObject data;
 
