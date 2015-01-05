@@ -1,7 +1,8 @@
 ## 0.0.3
 
+- Added test of the variadic function
 - Removed an unnecessary allocation of values in instantiation of the variadic foreign function. Variadic function always re-allocates them on each invocation
-- Renamed the method `exec` to `invoke` in `ForeignFunction`
+- Renamed method `exec` to `invoke` in `ForeignFunction`
 
 ## 0.0.2
 

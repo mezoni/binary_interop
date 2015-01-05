@@ -496,7 +496,7 @@ class _Context {
 }
 
 // TODO: Remove
-class _FfiTypes {
+class _FfiTypes2 {
   static const int DOUBLE = 0;
 
   static const int FLOAT = 1;
@@ -534,6 +534,10 @@ class _Values {
   _Values(FunctionType functionType, BinaryTypes systemTypes, [List<BinaryType> vartypes]) {
     if (functionType == null) {
       throw new ArgumentError.notNull("functionType");
+    }
+
+    if (systemTypes == null) {
+      throw new ArgumentError.notNull("systemTypes");
     }
 
     if (vartypes == null) {

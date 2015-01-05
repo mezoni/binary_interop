@@ -35,6 +35,7 @@ void testLibraryLinux() {
   var ca = helper.allocString(string);
   var length = library.invokeEx("strlen", [~ca]);
   expect(length, string.length, reason: "Call 'strlen'");
+  _testVariadic(library, "snprintf", types);
   library.free();
 }
 
@@ -48,6 +49,8 @@ void testLibraryMacos() {
   var ca = helper.allocString(string);
   var length = library.invokeEx("strlen", [~ca]);
   expect(length, string.length, reason: "Call 'strlen'");
+  // Variadic
+  _testVariadic(library, "snprintf", types);
   library.free();
 }
 
@@ -63,5 +66,22 @@ void testLibraryWindows() {
   var ca = helper.allocString(string);
   var length = library.invokeEx("lstrlen", [~ca]);
   expect(length, string.length, reason: "Call 'lstrlen'");
+  // Variadic
+  var msvcr100 = DynamicLibrary.load("msvcr100.dll");
+  expect(msvcr100.handle != null, true, reason: "Library handle");
+  _testVariadic(library, "_sprintf_p", types);
   library.free();
+}
+
+void _testVariadic(DynamicLibrary library, String name, BinaryTypes types) {
+  library.function(name, types["int"], [types["char*"], types["size_t"], types["char*"], types["..."]]);
+  var helper = new BinaryTypeHelper(types);
+  var bufsize = 500;
+  var buffer = types["char"].array(bufsize).alloc(const []);
+  var hello = helper.allocString("Hello %s");
+  var world = helper.allocString("World");
+  var length = library.invoke(name, [~buffer, bufsize, "Hello %s", "World"]);
+  var formatted = helper.readString(~buffer);
+  expect(formatted, "Hello World", reason: "Hello World");
+  expect(length, formatted.length, reason: formatted);
 }
