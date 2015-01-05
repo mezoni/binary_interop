@@ -1,7 +1,6 @@
 library binary_interop.internal.ffi_headers;
 
 import "dart:collection";
-import "dart:io";
 
 import "package:system_info/system_info.dart";
 
