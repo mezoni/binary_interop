@@ -1,9 +1,9 @@
 binary_interop
 =====
 
-Binary interop is a library that allows load shared libraries, invoke their functions and get access to their data.
+{{DESCRIPTION}}
 
-Version: 0.0.2
+Version: {{VERSION}}
 
 Initial release. Use at your own risk!
 
@@ -21,4 +21,4 @@ Initial release. Use at your own risk!
 Binary interop is a low-level way of interacting with dynamic loadable libraries.  
 It support interaction only through the low level binary types and binary objects.
 
-
+{{example/example.dart}}
