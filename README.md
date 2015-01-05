@@ -3,7 +3,7 @@ binary_interop
 
 Binary interop is a library that allows load shared libraries, invoke their functions and get access to their data.
 
-Version: 0.0.2
+Version: 0.0.3
 
 Initial release. Use at your own risk!
 

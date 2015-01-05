@@ -72,7 +72,7 @@ class DynamicLibrary {
       throw new ArgumentError("Function '$name' not found.");
     }
 
-    return function.exec(arguments, vartypes);
+    return function.invoke(arguments, vartypes);
   }
 
   /**
@@ -192,7 +192,7 @@ class DynamicLibrary {
       }
     }
 
-    return function.exec(newArguments, vartypes);
+    return function.invoke(newArguments, vartypes);
   }
 
   /**

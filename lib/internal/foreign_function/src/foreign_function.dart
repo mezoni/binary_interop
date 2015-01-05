@@ -113,7 +113,7 @@ class ForeignFunction {
     _initialize();
   }
 
-  dynamic exec(List<dynamic> arguments, [List<BinaryType> vartypes]) {
+  dynamic invoke(List<dynamic> arguments, [List<BinaryType> vartypes]) {
     if (arguments == null) {
       arguments = const [];
     }
@@ -437,7 +437,9 @@ class ForeignFunction {
 
   void _initialize() {
     _context = _buildContext(null, null);
-    _values = new _Values(functionType, _ffiTypes);
+    if (!_variadic) {
+      _values = new _Values(functionType, _ffiTypes);
+    }
   }
 
   static Map<BinaryKinds, FfiTypes> _createBinaryKind2FfiTypeMap() {
