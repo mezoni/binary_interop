@@ -186,7 +186,10 @@ class DynamicLibrary {
             }
           }
 
-        } else {
+        } else if (argument == null) {
+          throw new UnimplementedError("Promoting NULL values not implemented yet");
+        }
+        else {
           newArguments[i] = argument;
         }
       }
