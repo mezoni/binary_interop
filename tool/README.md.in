@@ -21,4 +21,6 @@ Initial release. Use at your own risk!
 Binary interop is a low-level way of interacting with dynamic loadable libraries.  
 It support interaction only through the low level binary types and binary objects.
 
-{{example/example.dart}}
+```dart
+{{test/test.dart}}
+```

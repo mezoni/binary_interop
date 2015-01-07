@@ -12,22 +12,24 @@ class DynamicLibrary {
   static final BinaryInterfaces _systemInterface = _getSystemInterface();
 
   /**
-   * Name of the file.
-   */
-  final String filename;
-
-  /**
    * Application binary interface.
    */
   final BinaryInterfaces binaryInterface;
+
+  /**
+   * Name of the file.
+   */
+  final String filename;
 
   CallingConventions _convention;
 
   int _handle;
 
+  BinaryTypes _types;
+
   Map<String, ForeignFunction> _functions = <String, ForeignFunction>{};
 
-  DynamicLibrary._internal(int handle, this.filename, this.binaryInterface, [CallingConventions convention]) {
+  DynamicLibrary._internal(int handle, this.filename, this.binaryInterface, {CallingConventions convention, BinaryTypes types}) {
     if (handle == null) {
       throw new ArgumentError.notNull("handle");
     }
@@ -42,12 +44,130 @@ class DynamicLibrary {
 
     _convention = convention;
     _handle = handle;
+    _types = types;
   }
 
   /**
    * Handle.
    */
   int get handle => _handle;
+
+  /**
+   * Returns binary types.
+   */
+  BinaryTypes get types => _types;
+
+  /**
+   * Declares the functions and binary types in textual format.
+   *
+   * Parameters:
+   *   [String] text
+   *   Declarations in textual format.
+   *
+   *   [Map]<[String], [String]> environment
+   *   Environment values for preprocessing declarations.
+   */
+  void declare(String text, {CallingConventions convention, Map<String, String> environment}) {
+    if (text == null) {
+      throw new ArgumentError.notNull("text");
+    }
+
+    if (types == null) {
+      _errorTypesNotDefined();
+    }
+
+    if (convention == null) {
+      if (_convention != null) {
+        convention = _convention;
+      }
+    }
+
+    types.declare(text, environment: environment);
+    var declarations = new BinaryDeclarations(text);
+    for (var declaration in declarations) {
+      if (declaration is FunctionDeclaration) {
+        var name = declaration.name;
+        var returnType = types[declaration.returnType.toString()];
+        var parameters = <dynamic>[];
+        for (var paramater in declaration.parameters) {
+          parameters.add(types[paramater.type.toString()]);
+        }
+
+        function(name, returnType, parameters, convention);
+      }
+    }
+  }
+
+  /**
+   * Frees this dynamic library.
+   *
+   * Parameters:
+   */
+  void free() {
+    if (_handle == null) {
+      _errorLibraryNotLoaded();
+    }
+
+    Unsafe.libraryFree(_handle);
+    _handle = null;
+  }
+
+  /**
+     * Imports and creates a foreign function with given name and stores it in
+     * the function table for further use.
+     *
+     * Parameters:
+     *   [String] name
+     *   Function name.
+     *
+     *   [BinaryType] returnType
+     *   Binary type of the return value.
+     *
+     *   [List]<[BinaryType]> parameters
+     *   Binary types of the parameters.
+     *
+     *   [CallingConventions] convention
+     *   Calling convention.
+     */
+  void function(String name, BinaryType returnType, List<BinaryType> parameters, [CallingConventions convention]) {
+    if (name == null) {
+      throw new ArgumentError.notNull("name");
+    }
+
+    if (returnType == null) {
+      throw new ArgumentError.notNull("returnType");
+    }
+
+    if (parameters == null) {
+      throw new ArgumentError.notNull("parameters");
+    }
+
+    if (convention == null) {
+      convention = _convention;
+      if (convention == null) {
+        convention = CallingConventions.DEFAULT;
+      }
+    }
+
+    if (_handle == null) {
+      _errorLibraryNotLoaded();
+    }
+
+    var dataModel = returnType.dataModel;
+    for (var parameter in parameters) {
+      if (parameter is! BinaryType) {
+        throw new ArgumentError("List of parameters contains invalid elements.");
+      }
+    }
+
+    var functionType = new FunctionType(returnType, parameters, dataModel);
+    var address = Unsafe.librarySymbol(handle, name);
+    if (address == 0) {
+      throw new ArgumentError("Symbol '$name' not found.");
+    }
+
+    _functions[name] = new ForeignFunction(address, functionType, convention, binaryInterface, _systemDataModel);
+  }
 
   /**
    * Executes a specific function and returns the result.
@@ -188,85 +308,13 @@ class DynamicLibrary {
 
         } else if (argument == null) {
           throw new UnimplementedError("Promoting NULL values not implemented yet");
-        }
-        else {
+        } else {
           newArguments[i] = argument;
         }
       }
     }
 
     return function.invoke(newArguments, vartypes);
-  }
-
-  /**
-   * Frees this dynamic library.
-   *
-   * Parameters:
-   */
-  void free() {
-    if (_handle == null) {
-      _errorLibraryNotLoaded();
-    }
-
-    Unsafe.libraryFree(_handle);
-    _handle = null;
-  }
-
-  /**
-   * Imports and creates a foreign function with given name and stores it in
-   * the function table for further use.
-   *
-   * Parameters:
-   *   [String] name
-   *   Function name.
-   *
-   *   [BinaryType] returnType
-   *   Binary type of the return value.
-   *
-   *   [List]<[BinaryType]> parameters
-   *   Binary types of the parameters.
-   *
-   *   [CallingConventions] convention
-   *   Calling convention.
-   */
-  void function(String name, BinaryType returnType, List<BinaryType> parameters, [CallingConventions convention]) {
-    if (name == null) {
-      throw new ArgumentError.notNull("name");
-    }
-
-    if (returnType == null) {
-      throw new ArgumentError.notNull("returnType");
-    }
-
-    if (parameters == null) {
-      throw new ArgumentError.notNull("parameters");
-    }
-
-    if (convention == null) {
-      convention = _convention;
-      if (convention == null) {
-        convention = CallingConventions.DEFAULT;
-      }
-    }
-
-    if (_handle == null) {
-      _errorLibraryNotLoaded();
-    }
-
-    var dataModel = returnType.dataModel;
-    for (var parameter in parameters) {
-      if (parameter is! BinaryType) {
-        throw new ArgumentError("List of parameters contains invalid elements.");
-      }
-    }
-
-    var functionType = new FunctionType(returnType, parameters, dataModel);
-    var address = Unsafe.librarySymbol(handle, name);
-    if (address == 0) {
-      throw new ArgumentError("Symbol '$name' not found.");
-    }
-
-    _functions[name] = new ForeignFunction(address, functionType, convention, binaryInterface, _systemDataModel);
   }
 
   /**
@@ -299,10 +347,33 @@ class DynamicLibrary {
     throw new StateError("Library '$filename' not loaded");
   }
 
+  void _errorUnableToParse(String declration, [int position]) {
+    var atPosition = "";
+    if (position != null) {
+      atPosition = " at position $position";
+    }
+
+    throw new StateError("Unable to parse declaration '$deprecated'$atPosition");
+  }
+
+  void _errorTypesNotDefined() {
+    throw new StateError("Binary types are not defined for '$filename'");
+  }
+
   /**
    * Loads and returns the dynamic library.
+   *
+   * Parameters:
+   *   [String] filename
+   *   Path to the dynamic library.
+   *
+   *   [BinaryInterfaces] abi
+   *   Binary interface
+   *
+   *   [BinaryTypes] types
+   *   Binary types
    */
-  static DynamicLibrary load(String filename, {BinaryInterfaces abi}) {
+  static DynamicLibrary load(String filename, {CallingConventions convention, BinaryInterfaces abi, BinaryTypes types}) {
     if (filename == null) {
       throw new ArgumentError.notNull("filename");
     }
@@ -320,7 +391,7 @@ class DynamicLibrary {
       throw new UnsupportedError("Unsupported binary interface: $abi");
     }
 
-    return new DynamicLibrary._internal(handle, filename, abi);
+    return new DynamicLibrary._internal(handle, filename, abi, convention: convention, types: types);
   }
 
   static BinaryInterfaces _getSystemInterface() {

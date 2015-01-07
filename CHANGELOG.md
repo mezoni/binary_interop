@@ -1,3 +1,7 @@
+## 0.0.4
+
+- Added possibility declare functions using textual form
+
 ## 0.0.3
 
 - Added test of the variadic function
