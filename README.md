@@ -5,6 +5,8 @@ Binary interop is a library that allows load shared libraries, invoke their func
 
 Version: 0.0.4
 
+[Donate to binary interop for dart](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=binary.dart@gmail.com&item_name=binary.interop.for.dart&currency_code=USD)
+
 Initial release. Use at your own risk!
 
 **Limitations**
