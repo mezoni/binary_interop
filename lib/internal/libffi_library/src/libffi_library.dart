@@ -31,7 +31,7 @@ class LibffiLibrary {
   }
 
   void ffiCall(int cif, int fn, int rvalue, int avalue) {
-    ForeignFucntionInterface.call(_ffiCall, cif, fn, rvalue, avalue);
+    ForeignFucntionInterface.callFunction(_ffiCall, cif, fn, rvalue, avalue);
     return;
   }
 
