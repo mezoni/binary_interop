@@ -1,6 +1,7 @@
 ## 0.0.5
 
-- Made adaptations to the new version of `binary_types`
+- Made adaptations to the new version of package `binary_types`
+- Made adaptations to the new version of package `unsafe_extension`
 
 ## 0.0.4
 

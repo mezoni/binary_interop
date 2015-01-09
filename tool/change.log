@@ -5,4 +5,5 @@
 0.0.3 Added test of the variadic function
 0.0.3 Removed unused class `_FfiTypes`
 0.0.4 Added possibility declare functions using textual form
-0.0.5 Made adaptations to the new version of `binary_types`
+0.0.5 Made adaptations to the new version of package `binary_types`
+0.0.5 Made adaptations to the new version of package `unsafe_extension`
