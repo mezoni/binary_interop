@@ -3,98 +3,57 @@ import "dart:io";
 import "package:binary_interop/binary_interop.dart";
 import "package:unittest/unittest.dart";
 
-var kernel32_h_windows = '''
-size_t strlen(const char *s);
-''';
+import "libc.dart";
 
-var msvcr100_h_windows = '''
-int _sprintf_p(char *buffer, size_t sizeOfBuffer, const char *format, ...);
-''';
-
-var stdio_h_posix = '''
-int snprintf(char *str, size_t size, const char *format, ...);
-size_t strlen(const char *s);
-''';
+final _t = new BinaryTypes();
 
 void main() {
-  testLibrary();
+  var libc = loadLibc();
+  var helper = new BinaryTypeHelper(_t);
+
+  // Strlen
+  var string = "0123456789";
+  var length = libc.strlen(string);
+  expect(length, string.length, reason: "Call 'strlen'");
+
+  string = "Hello Dartisans 2015\n";
+
+  // printf
+  length = libc.printf("Hello %s %i\n", ["Dartisans", 2015]);
+  expect(length, string.length, reason: "Wrong length");
+
+  // sprintf
+  var buffer = alloc(_t["char[500]"]);
+  length = libc.sprintf(buffer, "Hello %s %i\n", ["Dartisans", 2015]);
+  var string2 = helper.readString(buffer);
+  expect(length, string.length, reason: "Wrong length");
+  expect(string, string2, reason: "Wrong string");
 }
 
-void testLibrary() {
+Libc loadLibc() {
+  String libname;
   var operatingSystem = Platform.operatingSystem;
   switch (operatingSystem) {
     case "macos":
-      testLibraryMacos();
+      libname = "libSystem.dylib";
       break;
     case "android":
     case "linux":
-      testLibraryLinux();
+      libname = "libc.so.6";
       break;
     case "windows":
-      testLibraryWindows();
+      libname = "msvcr100.dll";
       break;
     default:
       throw new UnsupportedError("Unsupported operating system: $operatingSystem");
   }
+
+  var library = DynamicLibrary.load(libname, types: _t);
+  if (library == null) {
+    throw new StateError("Failed to load library: $libname");
+  }
+
+  return new Libc(library);
 }
 
-void testLibraryLinux() {
-  var types = new BinaryTypes();
-  var library = DynamicLibrary.load("libc.so.6", types: types);
-  library.declare(stdio_h_posix);
-  var helper = new BinaryTypeHelper(types);
-  expect(library.handle != null, true, reason: "Library handle");
-  var string = "0123456789";
-  var ca = helper.allocString(string);
-  var length = library.invokeEx("strlen", [ca]);
-  expect(length, string.length, reason: "Call 'strlen'");
-  _testVariadic(library, "snprintf", types);
-  library.free();
-}
-
-void testLibraryMacos() {
-  var types = new BinaryTypes();
-  var library = DynamicLibrary.load("libSystem.dylib", types: types);
-  library.declare(stdio_h_posix);
-  var helper = new BinaryTypeHelper(types);
-  expect(library.handle != null, true, reason: "Library handle");
-  var string = "0123456789";
-  var ca = helper.allocString(string);
-  var length = library.invokeEx("strlen", [ca]);
-  expect(length, string.length, reason: "Call 'strlen'");
-  // Variadic
-  _testVariadic(library, "snprintf", types);
-  library.free();
-}
-
-void testLibraryWindows() {
-  var types = new BinaryTypes();
-  var library = DynamicLibrary.load("kernel32.dll", types: types);
-  types["LPCTSTR"] = types["char*"];
-  library.declare(kernel32_h_windows);
-  var helper = new BinaryTypeHelper(types);
-  expect(library.handle != null, true, reason: "Library handle");
-  var string = "0123456789";
-  var ca = helper.allocString(string);
-  var length = library.invokeEx("lstrlen", [ca]);
-  expect(length, string.length, reason: "Call 'lstrlen'");
-
-  // Variadic
-  var msvcr100 = DynamicLibrary.load("msvcr100.dll", types: types);
-  expect(msvcr100.handle != null, true, reason: "Library handle");
-  library.declare(msvcr100_h_windows);
-  _testVariadic(library, "_sprintf_p", types);
-  library.free();
-}
-
-void _testVariadic(DynamicLibrary library, String name, BinaryTypes types) {
-  var helper = new BinaryTypeHelper(types);
-  var bufsize = 500;
-  var buffer = types["char"].array(bufsize).alloc(const []);
-  var hello = helper.allocString("Hello %s");
-  var world = helper.allocString("World");
-  var length = library.invoke(name, [buffer, bufsize, "Hello %s", "World"]);
-  var formatted = helper.readString(buffer);
-  expect(formatted, "Hello World", reason: "Hello World");
-  expect(length, formatted.length, reason: formatted);
-}
+BinaryObject alloc(BinaryType type, [value]) => type.alloc(value);

@@ -1,3 +1,7 @@
+## 0.0.8
+
+- From now the test are performed on a `multi-platform` wrapper over the C language `libc`. Thanks to the tool `binary generator` 
+
 ## 0.0.5
 
 - Made adaptations to the new version of package `binary_types`

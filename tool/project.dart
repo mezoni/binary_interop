@@ -6,10 +6,11 @@ import "package:file_utils/file_utils.dart";
 
 const String CHANGE_LOG = "tool/change.log";
 const String CHANGELOG_MD = "CHANGELOG.md";
-const String TEST_DART = "test/test.dart";
+const String LIBC_DART = "test/libc.dart";
 const String PUBSPEC_YAML = "pubspec.yaml";
 const String README_MD = "README.md";
 const String README_MD_IN = "tool/README.md.in";
+const String TEST_DART = "test/test.dart";
 
 void main(List<String> args) {
   // Change directory to root
@@ -23,7 +24,7 @@ void main(List<String> args) {
     FileUtils.touch([t.name], create: true);
   });
 
-  file(README_MD, [README_MD_IN, PUBSPEC_YAML, TEST_DART], (Target t, Map args) {
+  file(README_MD, [README_MD_IN, PUBSPEC_YAML, TEST_DART, LIBC_DART], (Target t, Map args) {
     var sources = t.sources.toList();
     var template = new File(sources.removeAt(0)).readAsStringSync();
     // Remove "pubspec.yaml"

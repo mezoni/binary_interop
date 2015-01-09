@@ -7,3 +7,4 @@
 0.0.4 Added possibility declare functions using textual form
 0.0.5 Made adaptations to the new version of package `binary_types`
 0.0.5 Made adaptations to the new version of package `unsafe_extension`
+0.0.8 From now the test are performed on a `multi-platform` wrapper over the C language `libc`. Thanks to the tool `binary generator` 
