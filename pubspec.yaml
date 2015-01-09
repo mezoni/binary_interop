@@ -1,5 +1,5 @@
 name: binary_interop
-version: 0.0.4
+version: 0.0.5
 author: Andrew Mezoni <andrew.mezoni@gmail.com>
 description: Binary interop is a library that allows load shared libraries, invoke their functions and get access to their data.
 homepage: https://github.com/mezoni/binary_interop

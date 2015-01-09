@@ -1,3 +1,7 @@
+## 0.0.5
+
+- Made adaptations to the new version of `binary_types`
+
 ## 0.0.4
 
 - Added possibility declare functions using textual form

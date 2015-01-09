@@ -210,10 +210,10 @@ class ForeignFunction {
     for (var i = 0; i < length; i++) {
       var member = members[i];
       var data = _getFfiTypeForBinaryType(member, objects);
-      elements[i].value = data.location;
+      elements[i].value = data;
     }
 
-    data["elements"].value = elements.location;
+    data["elements"].value = elements;
     objects.add(elements);
     return data;
   }
@@ -278,12 +278,12 @@ class ForeignFunction {
 
     var currentTypes = context.fixedTypes;
     for (var i = 0; i < _arity; i++) {
-      context.atypes[i].value = currentTypes[i].location;
+      context.atypes[i].value = currentTypes[i];
     }
 
     currentTypes = context.variableTypes;
     for (var i = 0; i < variableLength; i++) {
-      context.atypes[_arity + i].value = currentTypes[i].location;
+      context.atypes[_arity + i].value = currentTypes[i];
     }
 
     var libffi = LibffiLibrary.current;
@@ -529,14 +529,14 @@ class _Values {
     for (var i = 0; i < fixedLength; i++) {
       var object = fixedParameters[i].alloc();
       objects[i] = object;
-      data[i].value = object.location;
+      data[i].value = object;
     }
 
     for (var i = 0,
         k = fixedLength; i < variableLength; i++, k++) {
       var object = vartypes[i].alloc();
       objects[k] = object;
-      data[k].value = object.location;
+      data[k].value = object;
     }
 
     var returnType = functionType.returnType;

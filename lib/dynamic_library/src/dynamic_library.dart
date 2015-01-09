@@ -268,7 +268,7 @@ class DynamicLibrary {
 
           var string = charType.array(argument.length + 1).alloc(argument.codeUnits);
           strings.add(string);
-          argument = ~string;
+          argument = string;
           vartypes[i - fixedLength] = charPointerType;
         } else if (argument is double) {
           if (doubleType == null) {
@@ -276,7 +276,7 @@ class DynamicLibrary {
           }
 
           vartypes[i - fixedLength] = doubleType;
-        } else if (argument is Reference) {
+        } else if (argument is BinaryData) {
           vartypes[i - fixedLength] = new PointerType(argument.type, dataModel);
 
         } else {
@@ -300,7 +300,7 @@ class DynamicLibrary {
 
               var string = valueType.array(argument.length + 1).alloc(argument.codeUnits);
               strings.add(string);
-              newArguments[i] = ~string;
+              newArguments[i] = string;
             } else {
               throw new ArgumentError("Unable to allocate string object for parameter $i: $parameter");
             }
