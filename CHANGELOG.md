@@ -1,6 +1,10 @@
+## 0.0.9
+
+- Made adaptations to tyh changes in package `binary_types` 
+
 ## 0.0.8
 
-- From now the test are performed on a `multi-platform` wrapper over the C language `libc`. Thanks to the tool `binary generator` 
+- From now the test are performed on a `multi-platform` wrapper over the C language `libc`. Thanks to the tool `binary generator`
 
 ## 0.0.5
 

@@ -1,0 +1,3 @@
+int printf(const char *format, ...);
+int sprintf(char *str, const char *format, ...);
+size_t strlen(const char *s);

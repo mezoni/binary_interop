@@ -160,7 +160,7 @@ class DynamicLibrary {
       }
     }
 
-    var functionType = new FunctionType(returnType, parameters, dataModel);
+    var functionType = new FunctionType(name, returnType, parameters, dataModel);
     var address = Unsafe.librarySymbol(handle, name);
     if (address == 0) {
       throw new ArgumentError("Symbol '$name' not found.");

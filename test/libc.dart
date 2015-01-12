@@ -7,10 +7,10 @@ class Libc {
   String _header = '''
 int printf(const char *format, ...);
 int sprintf(char *str, const char *format, ...);
-size_t strlen(const char *s);''';
-
+size_t strlen(const char *s);''';    
+      
   DynamicLibrary _library;
-
+  
   /**
    *
    */
@@ -18,11 +18,11 @@ size_t strlen(const char *s);''';
     if (library == null) {
       throw new ArgumentError.notNull("library");
     }
-
-    library.declare(_header);
+  
+    library.declare(_header);  
     _library = library;
   }
-
+  
   /**
    * int printf(char* format, ...)
    */
@@ -31,10 +31,10 @@ size_t strlen(const char *s);''';
     if (params != null) {
       arguments.addAll(params);
     }
-
+    
     return _library.invoke("printf", arguments);
   }
-
+  
   /**
    * int sprintf(char* str, char* format, ...)
    */
@@ -43,16 +43,16 @@ size_t strlen(const char *s);''';
     if (params != null) {
       arguments.addAll(params);
     }
-
+    
     return _library.invoke("sprintf", arguments);
   }
-
+  
   /**
    * size_t strlen(char* s)
    */
   int strlen(s) {
     return _library.invoke("strlen", [s]);
   }
-
+  
 }
 
