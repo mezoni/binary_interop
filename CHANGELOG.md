@@ -1,6 +1,10 @@
+## 0.0.10
+
+- Added parameter `lazy` to `DynamicLibrary.load`. It is turned on by default. This feature allows declare very big number of exported functions. These libraries will be loaded very fast and they will not consume an additional unmanaged memory on the unused declared functions.
+
 ## 0.0.9
 
-- Made adaptations to tyh changes in package `binary_types` 
+- Made adaptations to the changes in package `binary_types` 
 
 ## 0.0.8
 

@@ -21,15 +21,19 @@ class DynamicLibrary {
    */
   final String filename;
 
+  bool _lazy;
+
   CallingConventions _convention;
 
   int _handle;
 
-  BinaryTypes _types;
+  Map<String, _FunctionInfo> _declaredFunctions = <String, _FunctionInfo>{};
 
   Map<String, ForeignFunction> _functions = <String, ForeignFunction>{};
 
-  DynamicLibrary._internal(int handle, this.filename, this.binaryInterface, {CallingConventions convention, BinaryTypes types}) {
+  BinaryTypes _types;
+
+  DynamicLibrary._internal(int handle, this.filename, this.binaryInterface, {CallingConventions convention, bool lazy, BinaryTypes types}) {
     if (handle == null) {
       throw new ArgumentError.notNull("handle");
     }
@@ -42,7 +46,12 @@ class DynamicLibrary {
       throw new ArgumentError.notNull("binaryInterface");
     }
 
+    if (lazy == null) {
+      throw new ArgumentError.notNull("lazy");
+    }
+
     _convention = convention;
+    _lazy = lazy;
     _handle = handle;
     _types = types;
   }
@@ -166,33 +175,11 @@ class DynamicLibrary {
       throw new ArgumentError("Symbol '$name' not found.");
     }
 
-    _functions[name] = new ForeignFunction(address, functionType, convention, binaryInterface, _systemDataModel);
-  }
-
-  /**
-   * Executes a specific function and returns the result.
-   *
-   * Parameters:
-   *   [String] name
-   *   Function name.
-   *
-   *   [List] arguments
-   *   Function araguments.
-   *
-   *   [List]<[BinaryType]> vartypes
-   *   Types of variadic arguments.
-   */
-  dynamic invokeEx(String name, [List arguments, List<BinaryType> vartypes]) {
-    if (_handle == null) {
-      _errorLibraryNotLoaded();
+    if (_lazy) {
+      _declaredFunctions[name] = new _FunctionInfo(address, functionType, convention);
+    } else {
+      _functions[name] = new ForeignFunction(address, functionType, convention, binaryInterface, _systemDataModel);
     }
-
-    var function = _functions[name];
-    if (function == null) {
-      throw new ArgumentError("Function '$name' not found.");
-    }
-
-    return function.invoke(arguments, vartypes);
   }
 
   /**
@@ -220,7 +207,7 @@ class DynamicLibrary {
 
     var function = _functions[name];
     if (function == null) {
-      throw new ArgumentError("Function '$name' not found.");
+      function = _compile(name);
     }
 
     var functionType = function.functionType;
@@ -318,6 +305,32 @@ class DynamicLibrary {
   }
 
   /**
+   * Executes a specific function and returns the result.
+   *
+   * Parameters:
+   *   [String] name
+   *   Function name.
+   *
+   *   [List] arguments
+   *   Function araguments.
+   *
+   *   [List]<[BinaryType]> vartypes
+   *   Types of variadic arguments.
+   */
+  dynamic invokeEx(String name, [List arguments, List<BinaryType> vartypes]) {
+    if (_handle == null) {
+      _errorLibraryNotLoaded();
+    }
+
+    var function = _functions[name];
+    if (function == null) {
+      function = _compile(name);
+    }
+
+    return function.invoke(arguments, vartypes);
+  }
+
+  /**
    * Returns the address of the symbol.
    *
    * Parameters:
@@ -343,8 +356,30 @@ class DynamicLibrary {
    */
   String toString() => filename;
 
+  ForeignFunction _compile(String name) {
+    ForeignFunction function;
+    if (_lazy) {
+      var info = _declaredFunctions[name];
+      if (info != null) {
+        function = new ForeignFunction(info.address, info.functionType, info.convention, binaryInterface, _systemDataModel);
+        _functions[name] = function;
+        _declaredFunctions[name] = null;
+      }
+    }
+
+    if (function == null) {
+      throw new ArgumentError("Function '$name' not found.");
+    }
+
+    return function;
+  }
+
   void _errorLibraryNotLoaded() {
     throw new StateError("Library '$filename' not loaded");
+  }
+
+  void _errorTypesNotDefined() {
+    throw new StateError("Binary types are not defined for '$filename'");
   }
 
   void _errorUnableToParse(String declration, [int position]) {
@@ -354,10 +389,6 @@ class DynamicLibrary {
     }
 
     throw new StateError("Unable to parse declaration '$deprecated'$atPosition");
-  }
-
-  void _errorTypesNotDefined() {
-    throw new StateError("Binary types are not defined for '$filename'");
   }
 
   /**
@@ -373,7 +404,7 @@ class DynamicLibrary {
    *   [BinaryTypes] types
    *   Binary types
    */
-  static DynamicLibrary load(String filename, {CallingConventions convention, BinaryInterfaces abi, BinaryTypes types}) {
+  static DynamicLibrary load(String filename, {BinaryInterfaces abi, CallingConventions convention, bool lazy: true, BinaryTypes types}) {
     if (filename == null) {
       throw new ArgumentError.notNull("filename");
     }
@@ -391,7 +422,11 @@ class DynamicLibrary {
       throw new UnsupportedError("Unsupported binary interface: $abi");
     }
 
-    return new DynamicLibrary._internal(handle, filename, abi, convention: convention, types: types);
+    if (lazy == null) {
+      throw new ArgumentError.notNull("lazy");
+    }
+
+    return new DynamicLibrary._internal(handle, filename, abi, convention: convention, lazy: lazy, types: types);
   }
 
   static BinaryInterfaces _getSystemInterface() {
@@ -452,4 +487,14 @@ class _CharTypeInfo {
 
     charType = IntType.create(dataModel.sizeOfChar, dataModel.isCharSigned, dataModel);
   }
+}
+
+class _FunctionInfo {
+  final int address;
+
+  final CallingConventions convention;
+
+  final FunctionType functionType;
+
+  _FunctionInfo(this.address, this.functionType, this.convention);
 }

@@ -8,4 +8,5 @@
 0.0.5 Made adaptations to the new version of package `binary_types`
 0.0.5 Made adaptations to the new version of package `unsafe_extension`
 0.0.8 From now the test are performed on a `multi-platform` wrapper over the C language `libc`. Thanks to the tool `binary generator`
-0.0.9 Made adaptations to tyh changes in package `binary_types` 
+0.0.9 Made adaptations to the changes in package `binary_types` 
+0.0.10 Added parameter `lazy` to `DynamicLibrary.load`. It is turned on by default. This feature allows declare very big number of exported functions. These libraries will be loaded very fast and they will not consume an additional unmanaged memory on the unused declared functions.

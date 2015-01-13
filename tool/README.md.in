@@ -7,7 +7,12 @@ Version: {{VERSION}}
 
 [Donate to binary interop for dart](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=binary.dart@gmail.com&item_name=binary.interop.for.dart&currency_code=USD)
 
-Initial release. Use at your own risk!
+**Interrelated (binary) software**
+
+- [Binary declarations](https://pub.dartlang.org/packages/binary_declarations)
+- [Binary generator](https://pub.dartlang.org/packages/binary_generator)
+- [Binary interop](https://pub.dartlang.org/packages/binary_interop)
+- [Binary types](https://pub.dartlang.org/packages/binary_types)
 
 **Limitations**
 
@@ -15,10 +20,14 @@ Initial release. Use at your own risk!
 - Returning the packed structures not supported
 - Passing by the value a packed structures not supported
 
-**Tested platforms**
+**Supportedd platforms**
 
 - X86 Linux
+- X86 Windows
 - X86_64 Linux
+- X86_64 Windows
+
+Mac OS X will be added soon.
 
 Binary interop is a low-level way of interacting with dynamic loadable libraries.  
 It support interaction only through the low level binary types and binary objects.

@@ -19,7 +19,7 @@ size_t strlen(const char *s);''';
       throw new ArgumentError.notNull("library");
     }
   
-    library.declare(_header);  
+    library.declare(_header);
     _library = library;
   }
   
