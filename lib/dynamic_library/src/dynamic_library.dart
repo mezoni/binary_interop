@@ -92,7 +92,7 @@ class DynamicLibrary {
     }
 
     types.declare(text, environment: environment);
-    var declarations = new BinaryDeclarations(text);
+    var declarations = new BinaryDeclarations(text, environment: environment);
     for (var declaration in declarations) {
       if (declaration is FunctionDeclaration) {
         var name = declaration.name;

@@ -1,6 +1,10 @@
+## 0.0.11
+
+- Added support for macro processing
+
 ## 0.0.10
 
-- Added parameter `lazy` to `DynamicLibrary.load`. It is turned on by default. This feature allows declare very big number of exported functions. These libraries will be loaded very fast and they will not consume an additional unmanaged memory on the unused declared functions.
+- Added parameter `lazy` to `DynamicLibrary.load`. It is turned on by default. This feature allows declare very big number of exported functions in libraries. These libraries will be loaded very fast and they will not consume an additional unmanaged memory on the unused declared functions.
 
 ## 0.0.9
 
