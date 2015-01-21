@@ -1,3 +1,7 @@
+## 0.0.12
+
+- Improved error reporting in `DynamicLibrary.declare()`
+
 ## 0.0.11
 
 - Added support for macro processing

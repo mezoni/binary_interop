@@ -93,17 +93,22 @@ class DynamicLibrary {
 
     types.declare(text, environment: environment);
     var declarations = new BinaryDeclarations(text, environment: environment);
-    for (var declaration in declarations) {
-      if (declaration is FunctionDeclaration) {
-        var name = declaration.name;
-        var returnType = types[declaration.returnType.toString()];
-        var parameters = <dynamic>[];
-        for (var paramater in declaration.parameters) {
-          parameters.add(types[paramater.type.toString()]);
-        }
+    BinaryDeclaration declaration;
+    try {
+      for (declaration in declarations) {
+        if (declaration is FunctionDeclaration) {
+          var name = declaration.name;
+          var returnType = types[declaration.returnType.toString()];
+          var parameters = <dynamic>[];
+          for (var paramater in declaration.parameters) {
+            parameters.add(types[paramater.type.toString()]);
+          }
 
-        function(name, returnType, parameters, convention);
+          function(name, returnType, parameters, convention);
+        }
       }
+    } catch (e) {
+      throw new StateError("Declaration '$declaration' has error: ${e.message}");
     }
   }
 
