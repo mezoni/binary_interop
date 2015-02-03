@@ -1,3 +1,8 @@
+## 0.0.14
+
+- Made adaptations to the new version of package `binary_declarations`
+- Made adaptations to the new version of package `binary_types`
+
 ## 0.0.12
 
 - Improved error reporting in `DynamicLibrary.declare()`

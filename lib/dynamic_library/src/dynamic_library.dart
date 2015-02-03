@@ -91,9 +91,10 @@ class DynamicLibrary {
       }
     }
 
-    types.declare(text, environment: environment);
-    var declarations = new BinaryDeclarations(text, environment: environment);
-    BinaryDeclaration declaration;
+    var helper = new BinaryTypeHelper(types);
+    helper.declare(text, environment: environment);
+    var declarations = new Declarations(text, environment: environment);
+    Declaration declaration;
     try {
       for (declaration in declarations) {
         if (declaration is FunctionDeclaration) {
@@ -107,8 +108,8 @@ class DynamicLibrary {
           function(name, returnType, parameters, convention);
         }
       }
-    } catch (e) {
-      throw new StateError("Declaration '$declaration' has error: ${e.message}");
+    } catch (e, s) {
+      throw new StateError("Declaration '$declaration' has error: $e");
     }
   }
 

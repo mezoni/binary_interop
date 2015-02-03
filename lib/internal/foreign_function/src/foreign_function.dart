@@ -1,11 +1,7 @@
 part of binary_interop.foreign_function;
 
 class ForeignFunction {
-  static const String _TYPE_FFI_ABI = "ffi_abi";
-
-  static const String _TYPE_FFI_CIF = "ffi_cif";
-
-  static const String _TYPE_FFI_TYPE = "ffi_type";
+  static const String _TYPE_FFI_TYPE_ = "ffi_type";
 
   static Map<CallingConventions, FfiAbi> _ffiAbi = <CallingConventions, FfiAbi>{
     CallingConventions.DEFAULT: FfiAbi.DEFAULT,
@@ -48,6 +44,8 @@ class ForeignFunction {
 
   DataModel _dataModel;
 
+  _FfiBinaryTypes _ffiTypes;
+
   FfiInterfaces _interface;
 
   List<int> _listOfAlignsOfFfiTypes;
@@ -57,8 +55,6 @@ class ForeignFunction {
   int _recursion;
 
   BinaryType _returnType;
-
-  BinaryTypes _ffiTypes;
 
   bool _variadic;
 
@@ -156,14 +152,19 @@ class ForeignFunction {
     return returnValue.value;
   }
 
-  BinaryObject _allocFfiType(FfiTypes type, BinaryType binaryType, List<BinaryObject> objects) {
-    var data = _ffiTypes[_TYPE_FFI_TYPE].alloc(const {});
+  BinaryObject _allocFfiType(FfiTypes type, BinaryType binaryType, int align, List<BinaryObject> objects) {
+    var data = _ffiTypes.ffi_type.alloc(const {});
     if (binaryType.kind == BinaryKinds.VOID) {
       data["alignment"].value = 1;
       data["size"].value = 1;
     } else {
-      data["alignment"].value = binaryType.align;
-      data["size"].value = binaryType.size;
+      var size = binaryType.size;
+      if (size == 0) {
+        throw new ArgumentError("Unable allocate incomplete type '$binaryType'");
+      }
+
+      data["alignment"].value = align;
+      data["size"].value = size;
     }
 
     var definedFfiType = FfiH.ffiType[_interface][type];
@@ -200,16 +201,12 @@ class ForeignFunction {
       throw new ArgumentError.notNull("objects");
     }
 
-    if (binaryType.pack != null) {
-      throw new UnsupportedError("Packed 'struct' not supported");
-    }
-
-    var members = binaryType.members.values.toList();
-    var length = members.length;
-    var elements = _ffiTypes["$_TYPE_FFI_TYPE*"].array(length + 1).alloc(const []);
+    var storageUnits = binaryType.storageUnits.elements;
+    var length = storageUnits.length;
+    var elements = _ffiTypes.pffi_type.array(length + 1).alloc(const []);
     for (var i = 0; i < length; i++) {
-      var member = members[i];
-      var data = _getFfiTypeForBinaryType(member, objects);
+      var storageUnit = storageUnits[i];
+      var data = _getFfiTypeForBinaryType(storageUnit.type, storageUnit.align, objects);
       elements[i].value = data;
     }
 
@@ -219,12 +216,18 @@ class ForeignFunction {
   }
 
   BinaryObject _allocFfiTypeUnion(BinaryObject data, UnionType binaryType, List<BinaryObject> objects) {
-    if (binaryType.pack != null) {
-      throw new UnsupportedError("Packed 'union' not supported");
+    var storageUnits = binaryType.storageUnits.elements;
+    StorageUnit storageUnit;
+    for (var element in storageUnits) {
+      if (storageUnit.size < element.size) {
+        storageUnit = element;
+      }
     }
 
-    // TODO: _allocVarFfiTypeUnion()
-    throw new UnimplementedError("_allocFfiTypeUnion()");
+    var elements = _ffiTypes.pffi_type.array(2).alloc(const []);
+    elements[0].value = _getFfiTypeForBinaryType(storageUnit.type, storageUnit.align, objects);
+    data["elements"].value = elements;
+    objects.add(elements);
     return data;
   }
 
@@ -241,11 +244,17 @@ class ForeignFunction {
       var fixedTypes = <BinaryObject>[];
       var parameters = functionType.parameters;
       for (var i = 0; i < _arity; i++) {
-        var data = _getFfiTypeForBinaryType(parameters[i], fixedTypeObjects);
+        var parameter = parameters[i];
+        var data = _getFfiTypeForBinaryType(parameter, parameter.align, fixedTypeObjects);
         fixedTypes.add(data);
       }
 
-      context.rtype = _getFfiTypeForBinaryType(_returnType, fixedTypeObjects);
+      var returnTypeAlign = 1;
+      if (_returnType is! VoidType) {
+        returnTypeAlign = _returnType.align;
+      }
+
+      context.rtype = _getFfiTypeForBinaryType(_returnType, returnTypeAlign, fixedTypeObjects);
       context.fixedTypeObjects = fixedTypeObjects;
       context.fixedTypes = fixedTypes;
     } else {
@@ -258,7 +267,8 @@ class ForeignFunction {
       var variableTypeObjects = <BinaryObject>[];
       var variableTypes = <BinaryObject>[];
       for (var i = 0; i < variableLength; i++) {
-        var ffiType = _getFfiTypeForBinaryType(vartypes[i], variableTypeObjects);
+        var parameter = vartypes[i];
+        var ffiType = _getFfiTypeForBinaryType(parameter, parameter.align, variableTypeObjects);
         variableTypes.add(ffiType);
       }
 
@@ -269,7 +279,7 @@ class ForeignFunction {
       context.variableTypes = const <BinaryObject>[];
     }
 
-    context.cif = _ffiTypes[_TYPE_FFI_CIF].alloc({});
+    context.cif = _ffiTypes.ffi_cif.alloc({});
     if (totalLength != 0) {
       context.atypes = _ffiTypes["void*"].array(totalLength).alloc();
     } else {
@@ -322,7 +332,7 @@ class ForeignFunction {
     return types;
   }
 
-  BinaryObject _getFfiTypeForBinaryType(BinaryType type, List<BinaryObject> objects) {
+  BinaryObject _getFfiTypeForBinaryType(BinaryType type, int align, List<BinaryObject> objects) {
     var kind = type.kind;
     var ffiType = _binaryKind2FfiType[type.kind];
     if (ffiType == null) {
@@ -335,18 +345,9 @@ class ForeignFunction {
       _ffiType2BinaryObjects[ffiType] = alignments;
     }
 
-    int align;
-    switch (kind) {
-      case BinaryKinds.VOID:
-        align = 0;
-        break;
-      default:
-        align = type.align;
-    }
-
     var object = alignments[align];
     if (object == null) {
-      object = _allocFfiType(ffiType, type, objects);
+      object = _allocFfiType(ffiType, type, align, objects);
       switch (kind) {
         case BinaryKinds.STRUCT:
           break;
@@ -359,78 +360,13 @@ class ForeignFunction {
     return object;
   }
 
-  BinaryTypes _getFfiTypes(DataModel dataModel) {
+  _FfiBinaryTypes _getFfiTypes(DataModel dataModel) {
     var types = _ffiTypesForModels[dataModel];
     if (types != null) {
       return types;
     }
 
-    types = new BinaryTypes(dataModel: dataModel);
-    var helper = new BinaryTypeHelper(types);
-    types[_TYPE_FFI_ABI] = types["int"];
-    /*
-     * typedef struct _ffi_type {
-     *   size_t size;
-     *   unsigned short alignment;
-     *   unsigned short type;
-     *   struct _ffi_type **elements;
-     * } ffi_type;
-     */
-
-    const TYPE__FFI_TYPE = "_$_TYPE_FFI_TYPE";
-    helper.declareStruct(TYPE__FFI_TYPE, null);
-    types[_TYPE_FFI_TYPE] = helper.declareStruct(TYPE__FFI_TYPE, {
-      "size": "size_t",
-      "alignment": "unsigned short",
-      "type": "unsigned short",
-      "elements": "struct $TYPE__FFI_TYPE**"
-    });
-
-    /*
-     * typedef struct {
-     *   ffi_abi abi;
-     *   unsigned nargs;
-     *   ffi_type **arg_types;
-     *   ffi_type *rtype;
-     *   unsigned bytes;
-     *   unsigned flags;
-     * #ifdef FFI_EXTRA_CIF_FIELDS
-     *   FFI_EXTRA_CIF_FIELDS;
-     * #endif
-     * } ffi_cif;
-     */
-
-    var cifFields = {
-      "abi": "ffi_abi",
-      "nargs": "unsigned",
-      "arg_types": "ffi_type**",
-      "rtype": "ffi_type*",
-      "bytes": "unsigned",
-      "flags": "unsigned"
-    };
-
-    var architecture = SysInfo.processors.first.architecture;
-    // Extra cif fields
-    switch (architecture) {
-      case ProcessorArchitecture.X86:
-      case ProcessorArchitecture.X86_64:
-        break;
-      case ProcessorArchitecture.MIPS:
-        cifFields["rstruct_flag"] = "unsigned";
-        break;
-      case ProcessorArchitecture.ARM:
-        cifFields["vfp_used"] = "int";
-        cifFields["vfp_reg_free"] = "short";
-        cifFields["vfp_nargs"] = "short";
-        cifFields["vfp_args"] = "signed char[16]";
-        break;
-      //case ProcessorArchitecture.ARM64:
-      //  break;
-      default:
-        throw new UnsupportedError("Unsupported processor architecture: $architecture");
-    }
-
-    types[_TYPE_FFI_CIF] = helper.declareStruct(null, cifFields);
+    types = new _FfiBinaryTypes(dataModel);
     _ffiTypesForModels[dataModel] = types;
     return types;
   }
@@ -493,6 +429,65 @@ class _Context {
   List<BinaryObject> variableTypes;
 
   List<BinaryObject> variableTypeObjects;
+}
+
+class _FfiBinaryTypes extends BinaryTypes {
+  static const String _ffi_header = '''
+typedef int ffi_abi;
+
+typedef struct _ffi_type {
+  size_t size;
+  unsigned short alignment;
+  unsigned short type;
+  struct _ffi_type **elements;
+} ffi_type;
+
+typedef struct {
+  ffi_abi abi;
+  unsigned int nargs;
+  ffi_type **arg_types;
+  ffi_type *rtype;
+  unsigned int bytes;
+  unsigned int flags;
+#if defined(FFI_EXTRA_CIF_FIELDS_MIPS)
+  unsigned int rstruct_flag;
+#elif defined(FFI_EXTRA_CIF_FIELDS_ARM)
+  int vfp_used;
+  short vfp_reg_free;
+  short vfp_nargs;
+  signed char vfp_args[16];
+#endif
+} ffi_cif;
+''';
+
+  _FfiBinaryTypes(DataModel dataModel) : super(dataModel: dataModel) {
+    var environment = <String, String>{};
+    var helper = new BinaryTypeHelper(this);
+    var architecture = SysInfo.processors.first.architecture;
+    switch (architecture) {
+      case ProcessorArchitecture.X86:
+      case ProcessorArchitecture.X86_64:
+        break;
+      case ProcessorArchitecture.MIPS:
+        environment["FFI_EXTRA_CIF_FIELDS_MIPS"] = "";
+        break;
+      case ProcessorArchitecture.ARM:
+        environment["FFI_EXTRA_CIF_FIELDS_ARM"] = "";
+        break;
+      //case ProcessorArchitecture.ARM64:
+      //  break;
+      default:
+        throw new UnsupportedError("Unsupported processor architecture: $architecture");
+    }
+
+    helper.declare(_ffi_header, environment: environment);
+  }
+
+  BinaryType get ffi_cif => this["ffi_cif"];
+
+  BinaryType get ffi_type => this["ffi_type"];
+
+  BinaryType get pffi_type => this["ffi_type*"];
 }
 
 class _Values {
