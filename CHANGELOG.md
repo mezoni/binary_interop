@@ -1,3 +1,7 @@
+## 0.0.16
+
+- Improved the performance of `DynamicLibrary.declare()` through the avoiding double parsing of declarations
+
 ## 0.0.15
 
 - Added parameter `alias` to the the function `DynamicLibrary.function()`

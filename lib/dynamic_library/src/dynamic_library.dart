@@ -92,8 +92,7 @@ class DynamicLibrary {
     }
 
     var helper = new BinaryTypeHelper(types);
-    helper.declare(text, environment: environment);
-    var declarations = new Declarations(text, environment: environment);
+    var declarations = helper.declare(text, environment: environment);
     Declaration declaration;
     try {
       for (declaration in declarations) {

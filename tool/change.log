@@ -19,3 +19,4 @@
 0.0.15 Breaking changes. The optional parameters of the function `DynamicLibrary.function()` are the named parameters now
 0.0.15 Added parameter `alias` to the the function `DynamicLibrary.function()`
 0.0.15 Added support of the attribute `alias`. Eg. `snprintf() __attribute__((alias(_sprintf_p)))` 
+0.0.16 Improved the performance of `DynamicLibrary.declare()` through the avoiding double parsing of declarations
