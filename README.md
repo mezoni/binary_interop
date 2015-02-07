@@ -3,7 +3,7 @@ binary_interop
 
 Binary interop is a library that allows load shared libraries, invoke their functions and get access to their data.
 
-Version: 0.0.14
+Version: 0.0.15
 
 [Donate to binary interop for dart](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=binary.dart@gmail.com&item_name=binary.interop.for.dart&currency_code=USD)
 
@@ -42,7 +42,7 @@ import "package:unittest/unittest.dart";
 
 import "libc.dart";
 
-final _t = new BinaryTypes();
+final BinaryTypes _t = new BinaryTypes();
 
 void main() {
   var libc = loadLibc();
@@ -61,7 +61,7 @@ void main() {
 
   // sprintf
   var buffer = alloc(_t["char[500]"]);
-  length = libc.sprintf(buffer, "Hello %s %i\n", ["Dartisans", 2015]);
+  length = libc.snprintf(buffer, 500, "Hello %s %i\n", ["Dartisans", 2015]);
   var string2 = helper.readString(buffer);
   expect(length, string.length, reason: "Wrong length");
   expect(string, string2, reason: "Wrong string");
@@ -108,11 +108,15 @@ import "package:binary_interop/binary_interop.dart";
 class Libc {
   String _header = '''
 int printf(const char *format, ...);
-int sprintf(char *str, const char *format, ...);
-size_t strlen(const char *s);''';    
-      
+#if OS == windows
+int snprintf(char *s, size_t n, const char *format, ...) __attribute__((alias(_sprintf_p)));
+#else
+int snprintf(char *s, size_t n, const char *format, ...);
+#endif
+size_t strlen(const char *s);''';
+
   DynamicLibrary _library;
-  
+
   /**
    *
    */
@@ -120,42 +124,42 @@ size_t strlen(const char *s);''';
     if (library == null) {
       throw new ArgumentError.notNull("library");
     }
-  
+
     library.declare(_header);
     _library = library;
   }
-  
+
   /**
-   * int printf(char* format, ...)
+   * int printf(const char* format, ...)
    */
-  int printf(format, [List params]) {
+  dynamic printf(format, [List params]) {
     var arguments = [format];
     if (params != null) {
       arguments.addAll(params);
     }
-    
+
     return _library.invoke("printf", arguments);
   }
-  
+
   /**
-   * int sprintf(char* str, char* format, ...)
+   * int snprintf(char* s, size_t n, const char* format, ...)
    */
-  int sprintf(str, format, [List params]) {
-    var arguments = [str, format];
+  dynamic snprintf(s, int n, format, [List params]) {
+    var arguments = [s, n, format];
     if (params != null) {
       arguments.addAll(params);
     }
-    
-    return _library.invoke("sprintf", arguments);
+
+    return _library.invoke("snprintf", arguments);
   }
-  
+
   /**
-   * size_t strlen(char* s)
+   * size_t strlen(const char* s)
    */
-  int strlen(s) {
+  dynamic strlen(s) {
     return _library.invoke("strlen", [s]);
   }
-  
+
 }
 
 

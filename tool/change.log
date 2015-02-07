@@ -14,3 +14,8 @@
 0.0.12 Improved error reporting in `DynamicLibrary.declare()`
 0.0.14 Made adaptations to the new version of package `binary_declarations`
 0.0.14 Made adaptations to the new version of package `binary_types`
+0.0.15 Made adaptations to the new version of package `binary_types`
+0.0.15 Made adaptations to the new version of package `binary_declarations`
+0.0.15 Breaking changes. The optional parameters of the function `DynamicLibrary.function()` are the named parameters now
+0.0.15 Added parameter `alias` to the the function `DynamicLibrary.function()`
+0.0.15 Added support of the attribute `alias`. Eg. `snprintf() __attribute__((alias(_sprintf_p)))` 

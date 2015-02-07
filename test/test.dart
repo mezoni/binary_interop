@@ -5,7 +5,7 @@ import "package:unittest/unittest.dart";
 
 import "libc.dart";
 
-final _t = new BinaryTypes();
+final BinaryTypes _t = new BinaryTypes();
 
 void main() {
   var libc = loadLibc();
@@ -24,7 +24,7 @@ void main() {
 
   // sprintf
   var buffer = alloc(_t["char[500]"]);
-  length = libc.sprintf(buffer, "Hello %s %i\n", ["Dartisans", 2015]);
+  length = libc.snprintf(buffer, 500, "Hello %s %i\n", ["Dartisans", 2015]);
   var string2 = helper.readString(buffer);
   expect(length, string.length, reason: "Wrong length");
   expect(string, string2, reason: "Wrong string");

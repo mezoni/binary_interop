@@ -6,11 +6,15 @@ import "package:binary_interop/binary_interop.dart";
 class Libc {
   String _header = '''
 int printf(const char *format, ...);
-int sprintf(char *str, const char *format, ...);
-size_t strlen(const char *s);''';    
-      
+#if OS == windows
+int snprintf(char *s, size_t n, const char *format, ...) __attribute__((alias(_sprintf_p)));
+#else
+int snprintf(char *s, size_t n, const char *format, ...);
+#endif
+size_t strlen(const char *s);''';
+
   DynamicLibrary _library;
-  
+
   /**
    *
    */
@@ -18,41 +22,41 @@ size_t strlen(const char *s);''';
     if (library == null) {
       throw new ArgumentError.notNull("library");
     }
-  
+
     library.declare(_header);
     _library = library;
   }
-  
+
   /**
-   * int printf(char* format, ...)
+   * int printf(const char* format, ...)
    */
-  int printf(format, [List params]) {
+  dynamic printf(format, [List params]) {
     var arguments = [format];
     if (params != null) {
       arguments.addAll(params);
     }
-    
+
     return _library.invoke("printf", arguments);
   }
-  
+
   /**
-   * int sprintf(char* str, char* format, ...)
+   * int snprintf(char* s, size_t n, const char* format, ...)
    */
-  int sprintf(str, format, [List params]) {
-    var arguments = [str, format];
+  dynamic snprintf(s, int n, format, [List params]) {
+    var arguments = [s, n, format];
     if (params != null) {
       arguments.addAll(params);
     }
-    
-    return _library.invoke("sprintf", arguments);
+
+    return _library.invoke("snprintf", arguments);
   }
-  
+
   /**
-   * size_t strlen(char* s)
+   * size_t strlen(const char* s)
    */
-  int strlen(s) {
+  dynamic strlen(s) {
     return _library.invoke("strlen", [s]);
   }
-  
+
 }
 

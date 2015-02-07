@@ -98,18 +98,21 @@ class DynamicLibrary {
     try {
       for (declaration in declarations) {
         if (declaration is FunctionDeclaration) {
-          var name = declaration.name;
-          var returnType = types[declaration.returnType.toString()];
+          var name = declaration.identifier.name;
+          var returnType = types[declaration.returnType.name];
           var parameters = <dynamic>[];
-          for (var paramater in declaration.parameters) {
-            parameters.add(types[paramater.type.toString()]);
+          var metadata = new _Metadata([declaration.parameters.metadata]);
+          for (var paramater in declaration.parameters.parameters) {
+            var name = paramater.type.name;
+            parameters.add(types[paramater.type.name]);
           }
 
-          function(name, returnType, parameters, convention);
+          var alias = metadata.alias;
+          function(name, returnType, parameters, alias: alias, convention: convention);
         }
       }
     } catch (e, s) {
-      throw new StateError("Declaration '$declaration' has error: $e");
+      throw new StateError("Declaration '$declaration' has error: $e\n$s");
     }
   }
 
@@ -141,10 +144,13 @@ class DynamicLibrary {
      *   [List]<[BinaryType]> parameters
      *   Binary types of the parameters.
      *
+     *   [String] alias
+     *   Real name of the foreign function.
+     *
      *   [CallingConventions] convention
      *   Calling convention.
      */
-  void function(String name, BinaryType returnType, List<BinaryType> parameters, [CallingConventions convention]) {
+  void function(String name, BinaryType returnType, List<BinaryType> parameters, {String alias, CallingConventions convention}) {
     if (name == null) {
       throw new ArgumentError.notNull("name");
     }
@@ -164,6 +170,10 @@ class DynamicLibrary {
       }
     }
 
+    if (alias == null) {
+      alias = name;
+    }
+
     if (_handle == null) {
       _errorLibraryNotLoaded();
     }
@@ -176,9 +186,9 @@ class DynamicLibrary {
     }
 
     var functionType = new FunctionType(name, returnType, parameters, dataModel);
-    var address = Unsafe.librarySymbol(handle, name);
+    var address = Unsafe.librarySymbol(handle, alias);
     if (address == 0) {
-      throw new ArgumentError("Symbol '$name' not found.");
+      throw new ArgumentError("Symbol '$alias' not found.");
     }
 
     if (_lazy) {

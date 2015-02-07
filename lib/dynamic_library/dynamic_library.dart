@@ -10,3 +10,4 @@ import "package:system_info/system_info.dart";
 import "package:unsafe_extension/unsafe_extension.dart";
 
 part "src/dynamic_library.dart";
+part "src/metadata.dart";
