@@ -107,6 +107,10 @@ class DynamicLibrary {
           }
 
           var alias = metadata.alias;
+          if (alias is String) {
+            alias = alias.trim();
+          }
+
           function(name, returnType, parameters, alias: alias, convention: convention);
         }
       }

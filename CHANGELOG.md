@@ -1,3 +1,7 @@
+## 0.0.17
+
+- Made adaptations to the new version of package `binary_declarations`
+
 ## 0.0.16
 
 - Improved the performance of `DynamicLibrary.declare()` through the avoiding double parsing of declarations
