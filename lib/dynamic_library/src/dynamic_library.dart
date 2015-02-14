@@ -92,26 +92,17 @@ class DynamicLibrary {
     }
 
     var helper = new BinaryTypeHelper(types);
-    var declarations = helper.declare(text, environment: environment);
+    var functions = <String, FunctionType>{};
+    var declarations = helper.declare(text, environment: environment, functions: functions);
     Declaration declaration;
     try {
       for (declaration in declarations) {
         if (declaration is FunctionDeclaration) {
-          var name = declaration.identifier.name;
-          var returnType = types[declaration.returnType.name];
-          var parameters = <dynamic>[];
-          var metadata = new _Metadata([declaration.parameters.metadata]);
-          for (var paramater in declaration.parameters.parameters) {
-            var name = paramater.type.name;
-            parameters.add(types[paramater.type.name]);
-          }
-
-          var alias = metadata.alias;
-          if (alias is String) {
-            alias = alias.trim();
-          }
-
-          function(name, returnType, parameters, alias: alias, convention: convention);
+          var declarator = declaration.declarator;
+          var name = declarator.identifier.name;
+          var func = functions[name];
+          var alias = _getAliasAttribute([declarator.metadata, declaration.metadata]);
+          function(name, func.returnType, func.parameters, alias: alias, convention: convention);
         }
       }
     } catch (e, s) {
@@ -408,6 +399,30 @@ class DynamicLibrary {
     }
 
     throw new StateError("Unable to parse declaration '$deprecated'$atPosition");
+  }
+
+  String _getAliasAttribute(List<DeclarationSpecifiers> specifiers) {
+    var aliases = [];
+    for (var specifier in specifiers) {
+      if (specifier != null) {
+        var reader = new AttributeReader([specifier]);
+        var alias = reader.getStringArgument("alias", 0, null, minLength: 1, maxLength: 1);
+        if (alias != null) {
+          alias = alias.trim();
+          aliases.add(alias);
+        }
+      }
+    }
+
+    if (aliases.length > 0) {
+      throw new StateError("Multiple aliases are not allowed");
+    }
+
+    if (aliases.length == 0) {
+      return null;
+    }
+
+    return aliases.first;
   }
 
   /**

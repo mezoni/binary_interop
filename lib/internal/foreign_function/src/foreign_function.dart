@@ -1,5 +1,6 @@
 part of binary_interop.foreign_function;
 
+// TODO: Add support of _Bool type
 class ForeignFunction {
   static const String _TYPE_FFI_TYPE_ = "ffi_type";
 
