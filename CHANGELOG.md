@@ -1,3 +1,7 @@
+## 0.0.19
+
+- Made adaptations to the new version of package `binary_declarations`
+
 ## 0.0.18
 
 - Made adaptations to the new version of package `binary_declarations`

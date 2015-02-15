@@ -210,6 +210,7 @@ class DynamicLibrary {
    *   [List] arguments
    *   Function araguments.
    */
+  // TODO: Add support of converting the "_Bool" binary types
   dynamic invoke(String name, [List arguments]) {
     if (_handle == null) {
       _errorLibraryNotLoaded();
@@ -392,15 +393,6 @@ class DynamicLibrary {
     throw new StateError("Binary types are not defined for '$filename'");
   }
 
-  void _errorUnableToParse(String declration, [int position]) {
-    var atPosition = "";
-    if (position != null) {
-      atPosition = " at position $position";
-    }
-
-    throw new StateError("Unable to parse declaration '$deprecated'$atPosition");
-  }
-
   String _getAliasAttribute(List<DeclarationSpecifiers> specifiers) {
     var aliases = [];
     for (var specifier in specifiers) {
@@ -408,13 +400,12 @@ class DynamicLibrary {
         var reader = new AttributeReader([specifier]);
         var alias = reader.getStringArgument("alias", 0, null, minLength: 1, maxLength: 1);
         if (alias != null) {
-          alias = alias.trim();
-          aliases.add(alias);
+          aliases.add(alias.value);
         }
       }
     }
 
-    if (aliases.length > 0) {
+    if (aliases.length > 1) {
       throw new StateError("Multiple aliases are not allowed");
     }
 
