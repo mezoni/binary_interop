@@ -284,7 +284,7 @@ class ForeignFunction {
     if (totalLength != 0) {
       context.atypes = _ffiTypes["void*"].array(totalLength).alloc();
     } else {
-      context.atypes = _ffiTypes["void*"].nullObject();
+      context.atypes = _ffiTypes["void*"].nullPtr;
     }
 
     var currentTypes = context.fixedTypes;
@@ -381,7 +381,9 @@ class ForeignFunction {
 
   static Map<BinaryKinds, FfiTypes> _createBinaryKind2FfiTypeMap() {
     var result = <BinaryKinds, FfiTypes>{};
+    result[BinaryKinds.BOOL] = FfiTypes.UINT8;
     result[BinaryKinds.DOUBLE] = FfiTypes.DOUBLE;
+    result[BinaryKinds.ENUM] = FfiTypes.SINT32;
     result[BinaryKinds.FLOAT] = FfiTypes.FLOAT;
     result[BinaryKinds.POINTER] = FfiTypes.POINTER;
     result[BinaryKinds.SINT16] = FfiTypes.SINT16;
@@ -518,7 +520,7 @@ class _Values {
     if (totalLength != 0) {
       data = systemTypes["void*"].array(totalLength).alloc();
     } else {
-      data = systemTypes["void*"].nullObject();
+      data = systemTypes["void*"].nullPtr;
     }
 
     objects = new List<BinaryObject>(totalLength);
@@ -539,7 +541,7 @@ class _Values {
     if (returnType.size != 0) {
       returnValue = functionType.returnType.alloc();
     } else {
-      returnValue = functionType.returnType.nullObject();
+      returnValue = functionType.returnType.nullPtr;
     }
   }
 }

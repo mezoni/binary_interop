@@ -7,7 +7,7 @@ class Libc {
   String _header = '''
 int printf(const char *format, ...);
 #if OS == windows
-int snprintf(char *s, size_t n, const char *format, ...) __attribute__((alias("_sprintf_p")));
+int snprintf(char *s, size_t n, const char *format, ...) __attribute__((alias(_sprintf_p)));
 #else
 int snprintf(char *s, size_t n, const char *format, ...);
 #endif

@@ -28,6 +28,10 @@ void main() {
   var string2 = helper.readString(buffer);
   expect(length, string.length, reason: "Wrong length");
   expect(string, string2, reason: "Wrong string");
+
+  // printf
+  length = libc.printf("True is %i\n", [true]);
+  expect(length, 10, reason: "Wrong length");
 }
 
 Libc loadLibc() {

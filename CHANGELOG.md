@@ -1,3 +1,9 @@
+## 0.0.20
+
+- Breaking changes. Added parameter `variadic` to the function `DynamicLibrary.function()`
+- Breaking changes. Removed support of the `VaListType`(in the function parameters declaration) in favor to the new specification where the functions with variable number of arguments should be declared through the additional parameter `variadic`
+- Made adaptations to the new version of package `binary_declarations`
+
 ## 0.0.19
 
 - Made adaptations to the new version of package `binary_declarations`

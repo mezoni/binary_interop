@@ -33,7 +33,8 @@ class DynamicLibrary {
 
   BinaryTypes _types;
 
-  DynamicLibrary._internal(int handle, this.filename, this.binaryInterface, {CallingConventions convention, bool lazy, BinaryTypes types}) {
+  DynamicLibrary._internal(int handle, this.filename, this.binaryInterface,
+      {CallingConventions convention, bool lazy, BinaryTypes types}) {
     if (handle == null) {
       throw new ArgumentError.notNull("handle");
     }
@@ -102,7 +103,8 @@ class DynamicLibrary {
           var name = declarator.identifier.name;
           var func = functions[name];
           var alias = _getAliasAttribute([declarator.metadata, declaration.metadata]);
-          function(name, func.returnType, func.parameters, alias: alias, convention: convention);
+          function(name, func.returnType, func.parameters,
+              alias: alias, convention: convention, variadic: func.variadic);
         }
       }
     } catch (e, s) {
@@ -141,10 +143,14 @@ class DynamicLibrary {
      *   [String] alias
      *   Real name of the foreign function.
      *
+     *   [bool] variadic
+     *   Indicates that the function can accept a variable number of arguments.
+     *
      *   [CallingConventions] convention
      *   Calling convention.
      */
-  void function(String name, BinaryType returnType, List<BinaryType> parameters, {String alias, CallingConventions convention}) {
+  void function(String name, BinaryType returnType, List<BinaryType> parameters,
+      {String alias, CallingConventions convention, bool variadic: false}) {
     if (name == null) {
       throw new ArgumentError.notNull("name");
     }
@@ -155,6 +161,10 @@ class DynamicLibrary {
 
     if (parameters == null) {
       throw new ArgumentError.notNull("parameters");
+    }
+
+    if (variadic == null) {
+      throw new ArgumentError.notNull("variadic");
     }
 
     if (convention == null) {
@@ -179,7 +189,7 @@ class DynamicLibrary {
       }
     }
 
-    var functionType = new FunctionType(name, returnType, parameters, dataModel);
+    var functionType = new FunctionType(name, returnType, parameters, variadic, dataModel);
     var address = Unsafe.librarySymbol(handle, alias);
     if (address == 0) {
       throw new ArgumentError("Symbol '$alias' not found.");
@@ -210,7 +220,6 @@ class DynamicLibrary {
    *   [List] arguments
    *   Function araguments.
    */
-  // TODO: Add support of converting the "_Bool" binary types
   dynamic invoke(String name, [List arguments]) {
     if (_handle == null) {
       _errorLibraryNotLoaded();
@@ -231,6 +240,7 @@ class DynamicLibrary {
       throw new ArgumentError("Wrong number of arguments.");
     }
 
+    BinaryType boolType;
     BinaryType charType;
     BinaryType charPointerType;
     BinaryType doubleType;
@@ -274,9 +284,14 @@ class DynamicLibrary {
           }
 
           vartypes[i - fixedLength] = doubleType;
+        } else if (argument is bool) {
+          if (boolType == null) {
+            boolType = new BoolType(dataModel);
+          }
+
+          vartypes[i - fixedLength] = boolType;
         } else if (argument is BinaryData) {
           vartypes[i - fixedLength] = new PointerType(argument.type, dataModel);
-
         } else {
           throw new ArgumentError("Unable to convert variable argument $i: $argument");
         }
@@ -303,7 +318,6 @@ class DynamicLibrary {
               throw new ArgumentError("Unable to allocate string object for parameter $i: $parameter");
             }
           }
-
         } else if (argument == null) {
           throw new UnimplementedError("Promoting NULL values not implemented yet");
         } else {
@@ -372,7 +386,8 @@ class DynamicLibrary {
     if (_lazy) {
       var info = _declaredFunctions[name];
       if (info != null) {
-        function = new ForeignFunction(info.address, info.functionType, info.convention, binaryInterface, _systemDataModel);
+        function =
+            new ForeignFunction(info.address, info.functionType, info.convention, binaryInterface, _systemDataModel);
         _functions[name] = function;
         _declaredFunctions[name] = null;
       }
@@ -398,9 +413,9 @@ class DynamicLibrary {
     for (var specifier in specifiers) {
       if (specifier != null) {
         var reader = new AttributeReader([specifier]);
-        var alias = reader.getStringArgument("alias", 0, null, minLength: 1, maxLength: 1);
-        if (alias != null) {
-          aliases.add(alias.value);
+        var alias = reader.getArgument("alias", 0, null, minLength: 1, maxLength: 1);
+        if (alias is Identifier) {
+          aliases.add(alias.name);
         }
       }
     }
@@ -429,7 +444,8 @@ class DynamicLibrary {
    *   [BinaryTypes] types
    *   Binary types
    */
-  static DynamicLibrary load(String filename, {BinaryInterfaces abi, CallingConventions convention, bool lazy: true, BinaryTypes types}) {
+  static DynamicLibrary load(String filename,
+      {BinaryInterfaces abi, CallingConventions convention, bool lazy: true, BinaryTypes types}) {
     if (filename == null) {
       throw new ArgumentError.notNull("filename");
     }

@@ -3,7 +3,7 @@ binary_interop
 
 Binary interop is a library that allows load shared libraries, invoke their functions and get access to their data.
 
-Version: 0.0.19
+Version: 0.0.20
 
 [Donate to binary interop for dart](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=binary.dart@gmail.com&item_name=binary.interop.for.dart&currency_code=USD)
 
@@ -65,6 +65,10 @@ void main() {
   var string2 = helper.readString(buffer);
   expect(length, string.length, reason: "Wrong length");
   expect(string, string2, reason: "Wrong string");
+
+  // printf
+  length = libc.printf("True is %i\n", [true]);
+  expect(length, 10, reason: "Wrong length");
 }
 
 Libc loadLibc() {
@@ -109,7 +113,7 @@ class Libc {
   String _header = '''
 int printf(const char *format, ...);
 #if OS == windows
-int snprintf(char *s, size_t n, const char *format, ...) __attribute__((alias("_sprintf_p")));
+int snprintf(char *s, size_t n, const char *format, ...) __attribute__((alias(_sprintf_p)));
 #else
 int snprintf(char *s, size_t n, const char *format, ...);
 #endif
