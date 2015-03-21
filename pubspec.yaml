@@ -4,10 +4,8 @@ author: Andrew Mezoni <andrew.mezoni@gmail.com>
 description: Binary interop is a library that allows load shared libraries, invoke their functions and get access to their data.
 homepage: https://github.com/mezoni/binary_interop
 dependencies:
-  binary_declarations:
-    git: https://github.com/mezoni/binary_declarations
-  binary_types:
-    git: https://github.com/mezoni/binary_types
+  binary_declarations: any
+  binary_types: any
   file_utils: any
   libffi_binaries: any
   path: any
