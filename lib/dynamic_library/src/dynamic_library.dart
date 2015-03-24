@@ -68,6 +68,21 @@ class DynamicLibrary {
   BinaryTypes get types => _types;
 
   /**
+   * Sets binary types.
+   */
+  void set types(BinaryTypes types) {
+    if (types == null) {
+      throw new ArgumentError.notNull("types");
+    }
+
+    if (_types != null) {
+      throw new StateError("Unable repeatedly set binary types");
+    }
+
+    _types = types;
+  }
+
+  /**
    * Declares the functions and binary types in textual format.
    *
    * Parameters:

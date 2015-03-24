@@ -1,3 +1,7 @@
+## 0.0.21
+
+- Added possibility to set the `binary types` for `DynamicLibrary` if they were not specified in the constructor
+
 ## 0.0.20
 
 - Breaking changes. Added parameter `variadic` to the function `DynamicLibrary.function()`
