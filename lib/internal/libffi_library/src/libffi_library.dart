@@ -71,7 +71,7 @@ class LibffiLibrary {
 
     var handle = _loadFromLibffiBinaries(filename);
     if (handle == 0) {
-      //handle = Unsafe.libraryLoad(filename);
+      handle = Unsafe.libraryLoad(filename);
     }
 
     if (handle == 0) {
