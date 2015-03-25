@@ -40,7 +40,27 @@ class LibffiLibrary {
   }
 
   int ffiPrepCifVar(int cif, int abi, int nfixedargs, int ntotalargs, int rtype, int atypes) {
-    return ForeignFucntionInterface.prepareCallInterfaceVariadic(_ffiPrepCifVar, cif, abi, nfixedargs, ntotalargs, rtype, atypes);
+    return ForeignFucntionInterface.prepareCallInterfaceVariadic(
+        _ffiPrepCifVar, cif, abi, nfixedargs, ntotalargs, rtype, atypes);
+  }
+
+  static String _findAlternativePubCache() {
+    var sdk = _findPathToDartVM();
+    if (sdk == null) {
+      return null;
+    }
+
+    var parts = sdk.split("/");
+    if (parts.length < 4) {
+      return null;
+    }
+
+    if (parts[1] != "home") {
+      return null;
+    }
+
+    var user = parts[2];
+    return "/home/$user/.pub-cache";
   }
 
   int _import(String symbol) {
@@ -50,6 +70,17 @@ class LibffiLibrary {
     }
 
     return address;
+  }
+
+  static String _getPubCachePath() {
+    if (Platform.environment.containsKey('PUB_CACHE')) {
+      return pathos.normalize(Platform.environment['PUB_CACHE']);
+    } else if (Platform.isWindows) {
+      var path = Platform.environment['APPDATA'];
+      return pathos.join(path, 'Pub', 'Cache');
+    } else {
+      return pathos.join(Platform.environment['HOME'], ".pub-cache");
+    }
   }
 
   static LibffiLibrary _load() {
@@ -69,8 +100,14 @@ class LibffiLibrary {
         return null;
     }
 
-    var handle = _loadFromLibffiBinaries(filename);
+    var cache = _getPubCachePath();
+    var handle = _loadFromLibffiBinaries(cache, filename);
     if (handle == 0) {
+      cache = _findAlternativePubCache();
+      if (cache != null) {
+        handle = _loadFromLibffiBinaries(cache, filename);
+      }
+
       //handle = Unsafe.libraryLoad(filename);
     }
 
@@ -81,24 +118,8 @@ class LibffiLibrary {
     return new LibffiLibrary(handle, filename);
   }
 
-  static int _loadFromLibffiBinaries(String filename) {
+  static int _loadFromLibffiBinaries(String pubCache, String filename) {
     var operatingSystem = Platform.operatingSystem;
-    var pubCache = Platform.environment["PUB_CACHE"];
-    if (pubCache == null) {
-      switch (operatingSystem) {
-        case "android":
-        case "linux":
-        case "macos":
-          pubCache = pathos.join(SysInfo.userDirectory, ".pub-cache");
-          break;
-        case "windows":
-          pubCache = pathos.join(SysInfo.userDirectory, "AppData", "Roaming", "Pub", "Cache");
-          break;
-        default:
-          return 0;
-      }
-    }
-
     var architecture = SysInfo.processors.first.architecture;
     switch (architecture) {
       case ProcessorArchitecture.X86:
@@ -157,5 +178,30 @@ class LibffiLibrary {
     }
 
     return path;
+  }
+
+  static String _findPathToDartVM() {
+    var executable = Platform.executable;
+    var s = Platform.pathSeparator;
+    if (!executable.contains(s)) {
+      if (Platform.isLinux) {
+        executable = new Link("/proc/$pid/exe").resolveSymbolicLinksSync();
+      } else {
+        return null;
+      }
+    }
+
+    var file = new File(executable);
+    if (file.existsSync()) {
+      var parent = file.absolute.parent;
+      parent = parent.parent;
+      var path = parent.path;
+      var dartAPI = "$path${s}include${s}dart_api.h";
+      if (new File(dartAPI).existsSync()) {
+        return path;
+      }
+    }
+
+    return null;
   }
 }

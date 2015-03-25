@@ -1,3 +1,7 @@
+## 0.0.22
+
+- Added possibility for the "root" user to load `libffi.so` from the user `pub cache` if `dart vm` executed from the user home directory (eg. /home/user/tools/dart)
+
 ## 0.0.21
 
 - Added possibility to set the `binary types` for `DynamicLibrary` if they were not specified in the constructor

@@ -27,3 +27,4 @@
 0.0.20 Breaking changes. Added parameter `variadic` to the function `DynamicLibrary.function()`
 0.0.20 Breaking changes. Removed support of the `VaListType`(in the function parameters declaration) in favor to the new specification where the functions with variable number of arguments should be declared through the additional parameter `variadic`
 0.0.21 Added possibility to set the `binary types` for `DynamicLibrary` if they were not specified in the constructor
+0.0.22 Added possibility for the "root" user to load `libffi.so` from the user `pub cache` if `dart vm` executed from the user home directory (eg. /home/user/tools/dart)
