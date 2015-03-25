@@ -3,7 +3,7 @@ binary_interop
 
 Binary interop is a library that allows load shared libraries, invoke their functions and get access to their data.
 
-Version: 0.0.22
+Version: 0.0.23
 
 [Donate to binary interop for dart](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=binary.dart@gmail.com&item_name=binary.interop.for.dart&currency_code=USD)
 
@@ -12,22 +12,21 @@ Version: 0.0.22
 - [Binary declarations](https://pub.dartlang.org/packages/binary_declarations)
 - [Binary generator](https://pub.dartlang.org/packages/binary_generator)
 - [Binary interop](https://pub.dartlang.org/packages/binary_interop)
+- [Binary marshalling](https://pub.dartlang.org/packages/binary_marshalling)
 - [Binary types](https://pub.dartlang.org/packages/binary_types)
 
 **Limitations**
 
 - Binary type "long double" not supported
-- Returning the packed structures not supported
-- Passing by the value a packed structures not supported
 
 **Supportedd platforms**
 
 - X86 Linux
+- X86 Mac OS
 - X86 Windows
 - X86_64 Linux
+- X86_64 Mac OS
 - X86_64 Windows
-
-Mac OS X will be added soon.
 
 Binary interop is a low-level way of interacting with dynamic loadable libraries.  
 It support interaction only through the low level binary types and binary objects.

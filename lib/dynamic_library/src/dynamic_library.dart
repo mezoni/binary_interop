@@ -4,9 +4,8 @@ part of binary_interop.dynamic_library;
  * Dynamic library is dynamically loadable library.
  */
 class DynamicLibrary {
-  /**
-   * System data model.
-   */
+  static Map<DataModel, _BasicTypes> _basicTypesCache = <DataModel, _BasicTypes>{};
+
   static final DataModel _systemDataModel = new DataModel();
 
   static final BinaryInterfaces _systemInterface = _getSystemInterface();
@@ -21,15 +20,19 @@ class DynamicLibrary {
    */
   final String filename;
 
-  bool _lazy;
-
   CallingConventions _convention;
 
-  int _handle;
+  _BasicTypes _basicTypes;
+
+  DataModel _dataModel;
 
   Map<String, _FunctionInfo> _declaredFunctions = <String, _FunctionInfo>{};
 
+  int _handle;
+
   Map<String, ForeignFunction> _functions = <String, ForeignFunction>{};
+
+  bool _lazy;
 
   BinaryTypes _types;
 
@@ -55,6 +58,10 @@ class DynamicLibrary {
     _lazy = lazy;
     _handle = handle;
     _types = types;
+
+    if (types != null) {
+      _setDataModel(types["int"].dataModel);
+    }
   }
 
   /**
@@ -80,6 +87,7 @@ class DynamicLibrary {
     }
 
     _types = types;
+    _setDataModel(types["int"].dataModel);
   }
 
   /**
@@ -255,11 +263,17 @@ class DynamicLibrary {
       throw new ArgumentError("Wrong number of arguments.");
     }
 
-    BinaryType boolType;
-    BinaryType charType;
-    BinaryType charPointerType;
-    BinaryType doubleType;
-    BinaryType intType;
+    _BasicTypes basicTypes;
+    if (_dataModel == dataModel) {
+      basicTypes = _basicTypes;
+    } else {
+      basicTypes = _basicTypesCache[dataModel];
+      if (basicTypes == null) {
+        basicTypes = new _BasicTypes(dataModel);
+        _basicTypesCache[dataModel] = basicTypes;
+      }
+    }
+
     List<BinaryType> vartypes;
     if (variableLength != 0) {
       vartypes = new List<BinaryType>(variableLength);
@@ -271,40 +285,20 @@ class DynamicLibrary {
       var argument = arguments[i];
       if (i >= fixedLength) {
         if (argument is int) {
-          if (intType == null) {
-            intType = IntType.create(dataModel.sizeOfInt, true, dataModel);
-          }
-
-          vartypes[i - fixedLength] = intType;
+          vartypes[i - fixedLength] = basicTypes.intType;
         } else if (argument is String) {
           if (strings == null) {
             strings = <BinaryObject>[];
           }
 
-          if (charType == null) {
-            charType = IntType.create(dataModel.sizeOfChar, dataModel.isCharSigned, dataModel);
-          }
-
-          if (charPointerType == null) {
-            charPointerType = charType.ptr();
-          }
-
-          var string = charType.array(argument.length + 1).alloc(argument.codeUnits);
+          var string = basicTypes.charType.array(argument.length + 1).alloc(argument.codeUnits);
           strings.add(string);
           argument = string;
-          vartypes[i - fixedLength] = charPointerType;
+          vartypes[i - fixedLength] = basicTypes.charPointerType;
         } else if (argument is double) {
-          if (doubleType == null) {
-            doubleType = new DoubleType(dataModel);
-          }
-
-          vartypes[i - fixedLength] = doubleType;
+          vartypes[i - fixedLength] = basicTypes.doubleType;
         } else if (argument is bool) {
-          if (boolType == null) {
-            boolType = new BoolType(dataModel);
-          }
-
-          vartypes[i - fixedLength] = boolType;
+          vartypes[i - fixedLength] = basicTypes.boolType;
         } else if (argument is BinaryData) {
           vartypes[i - fixedLength] = new PointerType(argument.type, dataModel);
         } else {
@@ -317,11 +311,7 @@ class DynamicLibrary {
         if (argument is String) {
           if (parameter is PointerType) {
             var valueType = parameter.type;
-            if (charType == null) {
-              charType = IntType.create(dataModel.sizeOfChar, dataModel.isCharSigned, dataModel);
-            }
-
-            if (valueType.kind == charType.kind) {
+            if (valueType.kind == basicTypes.charType.kind) {
               if (strings == null) {
                 strings = <BinaryObject>[];
               }
@@ -334,6 +324,7 @@ class DynamicLibrary {
             }
           }
         } else if (argument == null) {
+          // TODO: "Promoting NULL values not implemented yet"
           throw new UnimplementedError("Promoting NULL values not implemented yet");
         } else {
           newArguments[i] = argument;
@@ -446,6 +437,11 @@ class DynamicLibrary {
     return aliases.first;
   }
 
+  void _setDataModel(DataModel dataModel) {
+    _dataModel = dataModel;
+    _basicTypes = new _BasicTypes(dataModel);
+  }
+
   /**
    * Loads and returns the dynamic library.
    *
@@ -528,20 +524,6 @@ class DynamicLibrary {
     }
 
     return null;
-  }
-}
-
-class _CharTypeInfo {
-  BinaryType charType;
-
-  BinaryKinds charTypeKind;
-
-  _CharTypeInfo(DataModel dataModel) {
-    if (dataModel == null) {
-      throw new ArgumentError.notNull("dataModel");
-    }
-
-    charType = IntType.create(dataModel.sizeOfChar, dataModel.isCharSigned, dataModel);
   }
 }
 

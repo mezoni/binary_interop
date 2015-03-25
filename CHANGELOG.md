@@ -1,3 +1,7 @@
+## 0.0.23
+
+- Improved performance of the `DynamicLibrary.invoke()` with a variable parameters through the precompilation of the commonly used binary types (`bool`, `char`, `char *`,`int`, `double`) 
+
 ## 0.0.22
 
 - Added possibility for the "root" user to load `libffi.so` from the user `pub cache` if `dart vm` executed from the user home directory (eg. /home/user/tools/dart)
