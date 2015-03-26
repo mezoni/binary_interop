@@ -324,8 +324,12 @@ class DynamicLibrary {
             }
           }
         } else if (argument == null) {
-          // TODO: "Promoting NULL values not implemented yet"
-          throw new UnimplementedError("Promoting NULL values not implemented yet");
+          if (parameter.kind == BinaryKinds.POINTER) {
+            var pointerType = parameter as PointerType;
+            argument = pointerType.nullPtr;
+          } else {
+            throw new ArgumentError.value(null, "arg$i", "Unable convert to the type '${parameter.name}'");
+          }
         } else {
           newArguments[i] = argument;
         }

@@ -31,16 +31,16 @@ class LibffiLibrary {
   }
 
   void ffiCall(int cif, int fn, int rvalue, int avalue) {
-    ForeignFucntionInterface.callFunction(_ffiCall, cif, fn, rvalue, avalue);
+    ForeignFunctionInterface.callFunction(_ffiCall, cif, fn, rvalue, avalue);
     return;
   }
 
   int ffiPrepCif(int cif, int abi, int nargs, int rtype, int atypes) {
-    return ForeignFucntionInterface.prepareCallInterface(_ffiPrepCif, cif, abi, nargs, rtype, atypes);
+    return ForeignFunctionInterface.prepareCallInterface(_ffiPrepCif, cif, abi, nargs, rtype, atypes);
   }
 
   int ffiPrepCifVar(int cif, int abi, int nfixedargs, int ntotalargs, int rtype, int atypes) {
-    return ForeignFucntionInterface.prepareCallInterfaceVariadic(
+    return ForeignFunctionInterface.prepareCallInterfaceVariadic(
         _ffiPrepCifVar, cif, abi, nfixedargs, ntotalargs, rtype, atypes);
   }
 

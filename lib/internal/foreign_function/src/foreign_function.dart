@@ -1,9 +1,6 @@
 part of binary_interop.foreign_function;
 
-// TODO: Add support of _Bool type
 class ForeignFunction {
-  static const String _TYPE_FFI_TYPE_ = "ffi_type";
-
   static Map<CallingConventions, FfiAbi> _ffiAbi = <CallingConventions, FfiAbi>{
     CallingConventions.DEFAULT: FfiAbi.DEFAULT,
     CallingConventions.FASTCALL: FfiAbi.FASTCALL,
@@ -20,8 +17,6 @@ class ForeignFunction {
   static final Map<BinaryKinds, FfiTypes> _binaryKind2FfiType = _createBinaryKind2FfiTypeMap();
 
   static final Map<FfiTypes, Map<int, BinaryObject>> _ffiType2BinaryObjects = new Map<FfiTypes, Map<int, BinaryObject>>();
-
-  static Map<DataModel, BinaryTypes> _binaryTypesForModels = <DataModel, BinaryTypes>{};
 
   static Map<DataModel, BinaryTypes> _ffiTypesForModels = <DataModel, BinaryTypes>{};
 
@@ -43,15 +38,9 @@ class ForeignFunction {
 
   _Context _context;
 
-  DataModel _dataModel;
-
   _FfiBinaryTypes _ffiTypes;
 
   FfiInterfaces _interface;
-
-  List<int> _listOfAlignsOfFfiTypes;
-
-  List<BinaryObject> _listOfFfiTypes;
 
   int _recursion;
 
@@ -102,7 +91,6 @@ class ForeignFunction {
     }
 
     _arity = functionType.arity;
-    _dataModel = functionType.dataModel;
     _ffiTypes = _getFfiTypes(systemDataModel);
     _recursion = 0;
     _returnType = functionType.returnType;
@@ -139,7 +127,6 @@ class ForeignFunction {
     var objects = values.objects;
     for (var i = 0; i < totalLength; i++) {
       var object = objects[i];
-      var argument = arguments[i];
       object.value = arguments[i];
     }
 
@@ -321,16 +308,6 @@ class ForeignFunction {
 
   void _errorUnsupportedBinaryType(BinaryType type) {
     throw new UnsupportedError("Unsupported binary type: '$type'");
-  }
-
-  BinaryTypes _getBinaryTypes(DataModel dataModel) {
-    var types = _binaryTypesForModels[dataModel];
-    if (types == null) {
-      types = new BinaryTypes(dataModel: dataModel);
-      _binaryTypesForModels[dataModel] = types;
-    }
-
-    return types;
   }
 
   BinaryObject _getFfiTypeForBinaryType(BinaryType type, int align, List<BinaryObject> objects) {
