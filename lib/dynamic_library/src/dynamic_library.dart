@@ -279,6 +279,7 @@ class DynamicLibrary {
       vartypes = new List<BinaryType>(variableLength);
     }
 
+    List buffers;
     var newArguments = new List(totalLength);
     List<BinaryObject> strings;
     for (var i = 0; i < totalLength; i++) {
@@ -320,15 +321,33 @@ class DynamicLibrary {
               strings.add(string);
               newArguments[i] = string;
             } else {
-              throw new ArgumentError("Unable to allocate string object for parameter $i: $parameter");
+              throw new ArgumentError("Unable to allocate 'String' object for parameter $i: $parameter");
             }
+          }
+        } else if (argument is List) {
+          if (parameter is PointerType) {
+            var valueType = parameter.type;
+            if (buffers == null) {
+              buffers = [];
+            }
+
+            var length = argument.length;
+            if (length == 0) {
+              throw new ArgumentError("Unable to use zero length 'List' object for parameter $i: $parameter");
+            }
+
+            var array = valueType.array(length).alloc(const []);
+            buffers.add([argument, array]);
+            newArguments[i] = array;
+          } else {
+            throw new ArgumentError("Unable to use 'List' object for parameter $i: $parameter");
           }
         } else if (argument == null) {
           if (parameter.kind == BinaryKinds.POINTER) {
             var pointerType = parameter as PointerType;
             argument = pointerType.nullPtr;
           } else {
-            throw new ArgumentError.value(null, "arg$i", "Unable convert to the type '${parameter.name}'");
+            throw new ArgumentError("Unable to convert null for parameter $i: $parameter");
           }
         } else {
           newArguments[i] = argument;
@@ -336,7 +355,22 @@ class DynamicLibrary {
       }
     }
 
-    return function.invoke(newArguments, vartypes);
+    var result = function.invoke(newArguments, vartypes);
+    if (buffers != null) {
+      var count = buffers.length;
+      for (var i = 0; i < count; i++) {
+        List buffer = buffers[i];
+        List list = buffer[0];
+        BinaryData array = buffer[1];
+        var length = list.length;
+        List value = array.value;
+        for (var j = 0; j < length; j++) {
+          list[j] = value[j];
+        }
+      }
+    }
+
+    return result;
   }
 
   /**

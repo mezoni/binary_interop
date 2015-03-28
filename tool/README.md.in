@@ -22,6 +22,7 @@ Version: {{VERSION}}
 **Supportedd platforms**
 
 - ARM Android (Initial support)
+- ARM Linux (Initial support)
 - X86 Linux
 - X86 Mac OS (Will be removed)
 - X86 Windows

@@ -3,7 +3,7 @@ binary_interop
 
 Binary interop is a library that allows load shared libraries, invoke their functions and get access to their data.
 
-Version: 0.0.25
+Version: 0.0.26
 
 [Donate to binary interop for dart](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=binary.dart@gmail.com&item_name=binary.interop.for.dart&currency_code=USD)
 
@@ -22,6 +22,7 @@ Version: 0.0.25
 **Supportedd platforms**
 
 - ARM Android (Initial support)
+- ARM Linux (Initial support)
 - X86 Linux
 - X86 Mac OS (Will be removed)
 - X86 Windows
@@ -41,8 +42,6 @@ import "package:binary_interop/binary_interop.dart";
 import "package:unittest/unittest.dart";
 
 import "libc.dart";
-
-final BinaryTypes _t = new BinaryTypes();
 
 void main() {
   var libc = loadLibc();
@@ -66,10 +65,21 @@ void main() {
   expect(length, string.length, reason: "Wrong length");
   expect(string, string2, reason: "Wrong string");
 
+  // sprintf (w/o direct alloc binary buffer)
+  var buffer2 = new List<int>(500);
+  length = libc.snprintf(buffer2, buffer2.length, "Hello %s %i\n", ["Dartisans", 2015]);
+  string2 = stringFromArray(buffer2);
+  expect(length, string.length, reason: "Wrong length");
+  expect(string, string2, reason: "Wrong string");
+
   // printf
   length = libc.printf("True is %i\n", [true]);
   expect(length, 10, reason: "Wrong length");
 }
+
+final BinaryTypes _t = new BinaryTypes();
+
+BinaryObject alloc(BinaryType type, [value]) => type.alloc(value);
 
 Libc loadLibc() {
   String libname;
@@ -97,7 +107,14 @@ Libc loadLibc() {
   return new Libc(library);
 }
 
-BinaryObject alloc(BinaryType type, [value]) => type.alloc(value);
+String stringFromArray(List array) {
+  var index = array.indexOf(0);
+  if (index == -1) {
+    return "";
+  }
+
+  return new String.fromCharCodes(array.sublist(0, index));
+}
 
 ```
 

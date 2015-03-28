@@ -5,8 +5,6 @@ import "package:unittest/unittest.dart";
 
 import "libc.dart";
 
-final BinaryTypes _t = new BinaryTypes();
-
 void main() {
   var libc = loadLibc();
   var helper = new BinaryTypeHelper(_t);
@@ -29,10 +27,21 @@ void main() {
   expect(length, string.length, reason: "Wrong length");
   expect(string, string2, reason: "Wrong string");
 
+  // sprintf (w/o direct alloc binary buffer)
+  var buffer2 = new List<int>(500);
+  length = libc.snprintf(buffer2, buffer2.length, "Hello %s %i\n", ["Dartisans", 2015]);
+  string2 = stringFromArray(buffer2);
+  expect(length, string.length, reason: "Wrong length");
+  expect(string, string2, reason: "Wrong string");
+
   // printf
   length = libc.printf("True is %i\n", [true]);
   expect(length, 10, reason: "Wrong length");
 }
+
+final BinaryTypes _t = new BinaryTypes();
+
+BinaryObject alloc(BinaryType type, [value]) => type.alloc(value);
 
 Libc loadLibc() {
   String libname;
@@ -60,4 +69,11 @@ Libc loadLibc() {
   return new Libc(library);
 }
 
-BinaryObject alloc(BinaryType type, [value]) => type.alloc(value);
+String stringFromArray(List array) {
+  var index = array.indexOf(0);
+  if (index == -1) {
+    return "";
+  }
+
+  return new String.fromCharCodes(array.sublist(0, index));
+}

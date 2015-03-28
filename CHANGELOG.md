@@ -1,3 +1,7 @@
+## 0.0.26
+
+- Initial support of Unix (ARM)
+
 ## 0.0.25
 
 - Initial support of Android (ARM) 
