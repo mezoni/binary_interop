@@ -3,6 +3,8 @@ part of binary_interop.internal.abi;
 class BinaryInterfaces {
   static const BinaryInterfaces ARM_ANDROID = const BinaryInterfaces("ARM_ANDROID");
 
+  static const BinaryInterfaces ARM_UNIX = const BinaryInterfaces("ARM_UNIX");
+
   static const BinaryInterfaces X86_64_UNIX = const BinaryInterfaces("X86_64_UNIX");
 
   static const BinaryInterfaces X86_64_WINDOWS = const BinaryInterfaces("X86_64_WINDOWS");
@@ -15,6 +17,7 @@ class BinaryInterfaces {
 
   static const List<BinaryInterfaces> values = const <BinaryInterfaces>[
     ARM_ANDROID,
+    ARM_UNIX,
     X86_64_UNIX,
     X86_64_WINDOWS,
     X86_UNIX,
