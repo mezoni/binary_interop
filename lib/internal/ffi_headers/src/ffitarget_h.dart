@@ -85,6 +85,11 @@ class FfitargetH {
     conventions.add(FfiAbi.SYSV);
     conventions.add(FfiAbi.VFP);
     result[FfiInterfaces.ARM_ANDROID] = _buildAbi(conventions, FfiAbi.SYSV);
+    // ARM Unix
+    conventions.clear();
+    conventions.add(FfiAbi.SYSV);
+    conventions.add(FfiAbi.VFP);
+    result[FfiInterfaces.ARM_UNIX] = _buildAbi(conventions, FfiAbi.SYSV);
 
     // Check filling interfaces
     _Utils.checkFillingInterfaces(result);
