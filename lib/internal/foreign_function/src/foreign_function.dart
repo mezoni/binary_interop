@@ -380,6 +380,7 @@ class ForeignFunction {
   static Map<BinaryInterfaces, FfiInterfaces> _getPlatforms() {
     var result = <BinaryInterfaces, FfiInterfaces>{};
     result[BinaryInterfaces.ARM_ANDROID] = FfiInterfaces.ARM_ANDROID;
+    result[BinaryInterfaces.ARM_UNIX] = FfiInterfaces.ARM_UNIX;
     result[BinaryInterfaces.X86_64_UNIX] = FfiInterfaces.X86_64_UNIX;
     result[BinaryInterfaces.X86_64_WINDOWS] = FfiInterfaces.X86_64_WINDOWS;
     result[BinaryInterfaces.X86_UNIX] = FfiInterfaces.X86_UNIX;

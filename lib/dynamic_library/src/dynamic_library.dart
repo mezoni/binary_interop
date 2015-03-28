@@ -527,6 +527,8 @@ class DynamicLibrary {
         switch (operatingSystem) {
           case "android":
             return BinaryInterfaces.ARM_ANDROID;
+          case "linux":
+            return BinaryInterfaces.ARM_UNIX;
         }
 
         break;

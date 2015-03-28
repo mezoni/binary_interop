@@ -3,6 +3,8 @@ part of binary_interop.internal.ffi_headers;
 class FfiInterfaces {
   static const FfiInterfaces ARM_ANDROID = const FfiInterfaces("ARM_ANDROID");
 
+  static const FfiInterfaces ARM_UNIX = const FfiInterfaces("ARM_UNIX");
+
   static const FfiInterfaces X86_64_UNIX = const FfiInterfaces("X86_64_UNIX");
 
   static const FfiInterfaces X86_64_WINDOWS = const FfiInterfaces("X86_64_WINDOWS");
@@ -15,7 +17,7 @@ class FfiInterfaces {
 
   final String _name;
 
-  static const List<FfiInterfaces> values = const <FfiInterfaces>[X86_64_UNIX, X86_64_WINDOWS, X86_UNIX, X86_WINDOWS, X86_WINDOWS_GNU];
+  static const List<FfiInterfaces> values = const <FfiInterfaces>[X86_64_UNIX, X86_64_WINDOWS, X86_UNIX, X86_WINDOWS, X86_WINDOWS_GNU, ARM_ANDROID, ARM_UNIX];
 
   const FfiInterfaces(this._name);
 
