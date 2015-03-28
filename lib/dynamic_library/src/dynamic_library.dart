@@ -489,6 +489,13 @@ class DynamicLibrary {
     var operatingSystem = Platform.operatingSystem;
     var userSpaceBitness = SysInfo.userSpaceBitness;
     switch (SysInfo.processors.first.architecture) {
+      case ProcessorArchitecture.ARM:
+        switch (operatingSystem) {
+          case "android":
+            return BinaryInterfaces.ARM_ANDROID;
+        }
+
+        break;
       case ProcessorArchitecture.X86:
         switch (operatingSystem) {
           case "android":

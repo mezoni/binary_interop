@@ -3,7 +3,7 @@ binary_interop
 
 Binary interop is a library that allows load shared libraries, invoke their functions and get access to their data.
 
-Version: 0.0.24
+Version: 0.0.25
 
 [Donate to binary interop for dart](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=binary.dart@gmail.com&item_name=binary.interop.for.dart&currency_code=USD)
 
@@ -21,8 +21,9 @@ Version: 0.0.24
 
 **Supportedd platforms**
 
+- ARM Android (Initial support)
 - X86 Linux
-- X86 Mac OS
+- X86 Mac OS (Will be removed)
 - X86 Windows
 - X86_64 Linux
 - X86_64 Mac OS

@@ -1,6 +1,8 @@
 part of binary_interop.internal.ffi_headers;
 
 class FfiInterfaces {
+  static const FfiInterfaces ARM_ANDROID = const FfiInterfaces("ARM_ANDROID");
+
   static const FfiInterfaces X86_64_UNIX = const FfiInterfaces("X86_64_UNIX");
 
   static const FfiInterfaces X86_64_WINDOWS = const FfiInterfaces("X86_64_WINDOWS");

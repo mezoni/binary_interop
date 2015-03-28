@@ -1,6 +1,10 @@
+## 0.0.25
+
+- Initial support of Android (ARM) 
+
 ## 0.0.24
 
-- Made adaptations to the new version of package `unsafe_extension` 
+- Made adaptations to the new version of package `unsafe_extension`
 
 ## 0.0.23
 

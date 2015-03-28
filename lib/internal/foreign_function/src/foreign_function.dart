@@ -11,6 +11,7 @@ class ForeignFunction {
     CallingConventions.SYSV: FfiAbi.SYSV,
     CallingConventions.THISCALL: FfiAbi.THISCALL,
     CallingConventions.UNIX64: FfiAbi.UNIX64,
+    CallingConventions.VFP: FfiAbi.VFP,
     CallingConventions.WIN64: FfiAbi.WIN64,
   };
 
@@ -378,6 +379,7 @@ class ForeignFunction {
 
   static Map<BinaryInterfaces, FfiInterfaces> _getPlatforms() {
     var result = <BinaryInterfaces, FfiInterfaces>{};
+    result[BinaryInterfaces.ARM_ANDROID] = FfiInterfaces.ARM_ANDROID;
     result[BinaryInterfaces.X86_64_UNIX] = FfiInterfaces.X86_64_UNIX;
     result[BinaryInterfaces.X86_64_WINDOWS] = FfiInterfaces.X86_64_WINDOWS;
     result[BinaryInterfaces.X86_UNIX] = FfiInterfaces.X86_UNIX;
@@ -433,8 +435,8 @@ typedef struct {
   unsigned int rstruct_flag;
 #elif defined(FFI_EXTRA_CIF_FIELDS_ARM)
   int vfp_used;
-  short vfp_reg_free;
-  short vfp_nargs;
+  unsigned short vfp_reg_free;
+  unsigned short vfp_nargs;
   signed char vfp_args[16];
 #endif
 } ffi_cif;

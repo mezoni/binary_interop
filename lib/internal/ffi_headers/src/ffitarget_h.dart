@@ -19,6 +19,8 @@ class FfiAbi {
 
   static const FfiAbi UNIX64 = const FfiAbi("UNIX64");
 
+  static const FfiAbi VFP = const FfiAbi("VFP");
+
   static const FfiAbi WIN64 = const FfiAbi("WIN64");
 
   final String _name;
@@ -78,6 +80,12 @@ class FfitargetH {
     result[FfiInterfaces.X86_UNIX] = _buildAbi(conventions, FfiAbi.SYSV);
     // X86_64 Unix
     result[FfiInterfaces.X86_64_UNIX] = _buildAbi(conventions, FfiAbi.UNIX64);
+    // ARM android
+    conventions.clear();
+    conventions.add(FfiAbi.SYSV);
+    conventions.add(FfiAbi.VFP);
+    result[FfiInterfaces.ARM_ANDROID] = _buildAbi(conventions, FfiAbi.SYSV);
+
     // Check filling interfaces
     _Utils.checkFillingInterfaces(result);
     return new UnmodifiableMapView<FfiInterfaces, Map<FfiAbi, int>>(result);

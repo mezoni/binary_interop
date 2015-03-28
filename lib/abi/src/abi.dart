@@ -1,6 +1,8 @@
 part of binary_interop.internal.abi;
 
 class BinaryInterfaces {
+  static const BinaryInterfaces ARM_ANDROID = const BinaryInterfaces("ARM_ANDROID");
+
   static const BinaryInterfaces X86_64_UNIX = const BinaryInterfaces("X86_64_UNIX");
 
   static const BinaryInterfaces X86_64_WINDOWS = const BinaryInterfaces("X86_64_WINDOWS");
@@ -11,7 +13,14 @@ class BinaryInterfaces {
 
   static const BinaryInterfaces X86_WINDOWS_GNU = const BinaryInterfaces("X86_WINDOWS_GNU");
 
-  static const List<BinaryInterfaces> values = const <BinaryInterfaces>[X86_64_UNIX, X86_64_WINDOWS, X86_UNIX, X86_WINDOWS, X86_WINDOWS_GNU];
+  static const List<BinaryInterfaces> values = const <BinaryInterfaces>[
+    ARM_ANDROID,
+    X86_64_UNIX,
+    X86_64_WINDOWS,
+    X86_UNIX,
+    X86_WINDOWS,
+    X86_WINDOWS_GNU
+  ];
 
   final String _name;
 
@@ -38,6 +47,8 @@ class CallingConventions {
   static const CallingConventions THISCALL = const CallingConventions("THISCALL");
 
   static const CallingConventions UNIX64 = const CallingConventions("UNIX64");
+
+  static const CallingConventions VFP = const CallingConventions("VFP");
 
   static const CallingConventions WIN64 = const CallingConventions("WIN64");
 
