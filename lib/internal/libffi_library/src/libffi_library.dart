@@ -130,6 +130,8 @@ class LibffiLibrary {
         }
 
         break;
+      case ProcessorArchitecture.ARM:
+        break;
       default:
         return 0;
     }
