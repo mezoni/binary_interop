@@ -1,3 +1,7 @@
+## 0.0.27
+
+- Fixed bug on ARM
+
 ## 0.0.26
 
 - Initial support of Unix (ARM)
