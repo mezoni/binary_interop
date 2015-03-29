@@ -321,7 +321,7 @@ class DynamicLibrary {
               strings.add(string);
               newArguments[i] = string;
             } else {
-              throw new ArgumentError("Unable to allocate 'String' object for parameter $i: $parameter");
+              _errorUnableToConvert("'String'", i, parameter);
             }
           }
         } else if (argument is List) {
@@ -332,23 +332,18 @@ class DynamicLibrary {
             }
 
             var length = argument.length;
-            if (length == 0) {
-              throw new ArgumentError("Unable to use zero length 'List' object for parameter $i: $parameter");
+            if (length == 0) {              
+              _errorUnableToConvert("an empty 'List'", i, parameter);
             }
 
             var array = valueType.array(length).alloc(const []);
             buffers.add([argument, array]);
             newArguments[i] = array;
           } else {
-            throw new ArgumentError("Unable to use 'List' object for parameter $i: $parameter");
+            _errorUnableToConvert("'List'", i, parameter);
           }
         } else if (argument == null) {
-          if (parameter.kind == BinaryKinds.POINTER) {
-            var pointerType = parameter as PointerType;
-            argument = pointerType.nullPtr;
-          } else {
-            throw new ArgumentError("Unable to convert null for parameter $i: $parameter");
-          }
+          _errorUnableToConvert("null", i, parameter);
         } else {
           newArguments[i] = argument;
         }
@@ -450,6 +445,10 @@ class DynamicLibrary {
 
   void _errorTypesNotDefined() {
     throw new StateError("Binary types are not defined for '$filename'");
+  }
+
+  void _errorUnableToConvert(String subject, int index, BinaryType binaryType) {
+    throw new ArgumentError("Unable to convert $subject for parameter $index ($binaryType)");
   }
 
   String _getAliasAttribute(List<DeclarationSpecifiers> specifiers) {
