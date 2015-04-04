@@ -6,8 +6,10 @@ import "package:unittest/unittest.dart";
 import "libc.dart";
 
 void main() {
-  var libc = loadLibc();
   var helper = new BinaryTypeHelper(_t);
+  helper.addHeaders(LIBC_HEADERS);
+  helper.declare(LIBC_HEADERS.keys.first);
+  var libc = loadLibc();
 
   // Strlen
   var string = "0123456789";

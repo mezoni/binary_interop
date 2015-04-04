@@ -91,47 +91,43 @@ class DynamicLibrary {
   }
 
   /**
-   * Declares the functions and binary types in textual format.
+   * Links to the function prototypes declared in specified header files.
+   * Does not declare anything. The header files should be declared before the linkage.
    *
    * Parameters:
-   *   [String] text
-   *   Declarations in textual format.
-   *
-   *   [Map]<[String], [String]> environment
-   *   Environment values for preprocessing declarations.
+   *   [List<String>] headers
+   *   A list of names of header files.
    */
-  void declare(String text, {CallingConventions convention, Map<String, String> environment}) {
-    if (text == null) {
-      throw new ArgumentError.notNull("text");
+  void link(Iterable<String> headers) {
+    if (headers == null) {
+      throw new ArgumentError.notNull("headers");
+    }
+
+    var files = new Set<String>();
+    for (var header in headers) {
+      if (header == null) {
+        throw new ArgumentError("List of the headers contains an invalid elements");
+      }
+
+      files.add(header);
     }
 
     if (types == null) {
       _errorTypesNotDefined();
     }
 
-    if (convention == null) {
-      if (_convention != null) {
-        convention = _convention;
-      }
-    }
-
     var helper = new BinaryTypeHelper(types);
-    var functions = <String, FunctionType>{};
-    var declarations = helper.declare(text, environment: environment, functions: functions);
-    Declaration declaration;
-    try {
-      for (declaration in declarations) {
-        if (declaration is FunctionDeclaration) {
-          var declarator = declaration.declarator;
-          var name = declarator.identifier.name;
-          var func = functions[name];
-          var alias = _getAliasAttribute([declarator.metadata, declaration.metadata]);
-          function(name, func.returnType, func.parameters,
-              alias: alias, convention: convention, variadic: func.variadic);
-        }
+    var prototypes = helper.prototypes;
+    for (var name in prototypes.keys) {
+      var prototype = prototypes[name];
+      var filename = prototype.filename;
+      if (files.contains(filename)) {
+        var alias = prototype.alias;
+        var type = prototype.type;
+        // TODO: Add support of individual calling convention
+        function(name, type.returnType, type.parameters,
+            alias: alias, convention: _convention, variadic: type.variadic);
       }
-    } catch (e, s) {
-      throw new StateError("Declaration '$declaration' has error: $e\n$s");
     }
   }
 
@@ -332,7 +328,7 @@ class DynamicLibrary {
             }
 
             var length = argument.length;
-            if (length == 0) {              
+            if (length == 0) {
               _errorUnableToConvert("an empty 'List'", i, parameter);
             }
 

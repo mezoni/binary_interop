@@ -1,3 +1,10 @@
+## 0.0.29
+
+- Added new method `DynamicLibrary.link()`
+- Breaking changes: Removed method `DynamicLibrary.declare()`
+- Made adaptations to the new version of package `binary_declarations`
+- Made adaptations to the new version of package `binary_types`
+
 ## 0.0.27
 
 - Fixed bug on ARM

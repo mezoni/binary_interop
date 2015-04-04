@@ -415,6 +415,8 @@ class _Context {
 }
 
 class _FfiBinaryTypes extends BinaryTypes {
+  static const Map<String, String> _headers = const <String, String>{"ffi.h": _ffi_header};
+
   static const String _ffi_header = '''
 typedef int ffi_abi;
 
@@ -463,7 +465,8 @@ typedef struct {
         throw new UnsupportedError("Unsupported processor architecture: $architecture");
     }
 
-    helper.declare(_ffi_header, environment: environment);
+    helper.addHeaders(_headers);
+    helper.declare("ffi.h", environment: environment);
   }
 
   BinaryType get ffi_cif => this["ffi_cif"];
