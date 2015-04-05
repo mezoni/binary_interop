@@ -1,8 +1,10 @@
 import "package:binary_interop/binary_interop.dart";
 
-const Map<String, String> LIBC_HEADERS = const <String, String>{"header.h": _header};
+const Map<String, String> HEADERS = const <String, String>{"header.h": _header};
 
 const String _header = '''
+#include <stddef.h>
+
 int printf(const char *format, ...);
 #if OS == windows
 int snprintf(char *s, size_t n, const char *format, ...) __attribute__((alias(_sprintf_p)));
@@ -22,7 +24,7 @@ class Libc {
       throw new ArgumentError.notNull("library");
     }
 
-    library.link(LIBC_HEADERS.keys);
+    library.link(HEADERS.keys);
     _library = library;
   }
 

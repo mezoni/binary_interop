@@ -1,5 +1,6 @@
 import "dart:io";
 
+import "package:libc/headers.dart";
 import "package:binary_interop/binary_interop.dart";
 import "package:unittest/unittest.dart";
 
@@ -8,7 +9,8 @@ import "libc.dart";
 void main() {
   var helper = new BinaryTypeHelper(_t);
   helper.addHeaders(LIBC_HEADERS);
-  helper.declare(LIBC_HEADERS.keys.first);
+  helper.addHeaders(HEADERS);
+  helper.declare(HEADERS.keys.first);
   var libc = loadLibc();
 
   // Strlen

@@ -37,3 +37,4 @@
 0.0.29 Made adaptations to the new version of package `binary_types`
 0.0.29 Breaking changes: Removed method `DynamicLibrary.declare()`
 0.0.29 Added new method `DynamicLibrary.link()`
+0.0.30 Intial use of the 'headers' from 'libc' package. In the future, most of the "ffi" wrappers will be completely rewritten to use the binary headers

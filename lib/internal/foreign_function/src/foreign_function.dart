@@ -418,6 +418,8 @@ class _FfiBinaryTypes extends BinaryTypes {
   static const Map<String, String> _headers = const <String, String>{"ffi.h": _ffi_header};
 
   static const String _ffi_header = '''
+#include <stddef.h>;
+
 typedef int ffi_abi;
 
 typedef struct _ffi_type {
@@ -465,6 +467,7 @@ typedef struct {
         throw new UnsupportedError("Unsupported processor architecture: $architecture");
     }
 
+    helper.addHeaders(LIBC_HEADERS);
     helper.addHeaders(_headers);
     helper.declare("ffi.h", environment: environment);
   }

@@ -3,7 +3,7 @@ binary_interop
 
 Binary interop is a library that allows load shared libraries, invoke their functions and get access to their data.
 
-Version: 0.0.29
+Version: 0.0.30
 
 [Donate to binary interop for dart](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=binary.dart@gmail.com&item_name=binary.interop.for.dart&currency_code=USD)
 
@@ -38,6 +38,7 @@ It support interaction only through the low level binary types and binary object
 ```dart
 import "dart:io";
 
+import "package:libc/headers.dart";
 import "package:binary_interop/binary_interop.dart";
 import "package:unittest/unittest.dart";
 
@@ -46,7 +47,8 @@ import "libc.dart";
 void main() {
   var helper = new BinaryTypeHelper(_t);
   helper.addHeaders(LIBC_HEADERS);
-  helper.declare(LIBC_HEADERS.keys.first);
+  helper.addHeaders(HEADERS);
+  helper.declare(HEADERS.keys.first);
   var libc = loadLibc();
 
   // Strlen
@@ -125,9 +127,11 @@ Library wrapper for `libc`.
 ```dart
 import "package:binary_interop/binary_interop.dart";
 
-const Map<String, String> LIBC_HEADERS = const <String, String>{"header.h": _header};
+const Map<String, String> HEADERS = const <String, String>{"header.h": _header};
 
 const String _header = '''
+#include <stddef.h>
+
 int printf(const char *format, ...);
 #if OS == windows
 int snprintf(char *s, size_t n, const char *format, ...) __attribute__((alias(_sprintf_p)));
@@ -147,7 +151,7 @@ class Libc {
       throw new ArgumentError.notNull("library");
     }
 
-    library.link(LIBC_HEADERS.keys);
+    library.link(HEADERS.keys);
     _library = library;
   }
 
