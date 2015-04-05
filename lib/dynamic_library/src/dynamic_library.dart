@@ -447,29 +447,6 @@ class DynamicLibrary {
     throw new ArgumentError("Unable to convert $subject for parameter $index ($binaryType)");
   }
 
-  String _getAliasAttribute(List<DeclarationSpecifiers> specifiers) {
-    var aliases = [];
-    for (var specifier in specifiers) {
-      if (specifier != null) {
-        var reader = new AttributeReader([specifier]);
-        var alias = reader.getArgument("alias", 0, null, minLength: 1, maxLength: 1);
-        if (alias is Identifier) {
-          aliases.add(alias.name);
-        }
-      }
-    }
-
-    if (aliases.length > 1) {
-      throw new StateError("Multiple aliases are not allowed");
-    }
-
-    if (aliases.length == 0) {
-      return null;
-    }
-
-    return aliases.first;
-  }
-
   void _setDataModel(DataModel dataModel) {
     _dataModel = dataModel;
     _basicTypes = new _BasicTypes(dataModel);
