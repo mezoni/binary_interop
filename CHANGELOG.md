@@ -1,6 +1,10 @@
+## 0.0.31
+
+- Added support of the `binary callbacks` (libffi closures)
+
 ## 0.0.30
 
-- Intial use of the 'headers' from 'libc' package. In the future, most of the "ffi" wrappers will be completely rewritten to use the binary headers
+- Intial use of the `headers` from `libc` package. In the future, most of the `ffi` wrappers will be completely rewritten to use the `binary headers`
 
 ## 0.0.29
 

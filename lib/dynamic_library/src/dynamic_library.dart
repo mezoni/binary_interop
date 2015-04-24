@@ -4,23 +4,23 @@ part of binary_interop.dynamic_library;
  * Dynamic library is dynamically loadable library.
  */
 class DynamicLibrary {
-  static Map<DataModel, _BasicTypes> _basicTypesCache = <DataModel, _BasicTypes>{};
+  static final Map<DataModel, _BasicTypes> _basicTypesCache = <DataModel, _BasicTypes>{};
 
   static final DataModel _systemDataModel = new DataModel();
 
-  static final BinaryInterfaces _systemInterface = _getSystemInterface();
+  static final BinaryInterface _systemInterface = BinaryInteropHelper.getSystemInterface();
 
   /**
    * Application binary interface.
    */
-  final BinaryInterfaces binaryInterface;
+  final BinaryInterface binaryInterface;
 
   /**
    * Name of the file.
    */
   final String filename;
 
-  CallingConventions _convention;
+  CallingConvention _convention;
 
   _BasicTypes _basicTypes;
 
@@ -34,10 +34,12 @@ class DynamicLibrary {
 
   bool _lazy;
 
+  FfiPlatform _platform;
+
   BinaryTypes _types;
 
   DynamicLibrary._internal(int handle, this.filename, this.binaryInterface,
-      {CallingConventions convention, bool lazy, BinaryTypes types}) {
+      {CallingConvention convention, bool lazy, BinaryTypes types}) {
     if (handle == null) {
       throw new ArgumentError.notNull("handle");
     }
@@ -55,10 +57,10 @@ class DynamicLibrary {
     }
 
     _convention = convention;
-    _lazy = lazy;
     _handle = handle;
+    _lazy = lazy;
+    _platform = BinaryInteropHelper.binaryInterfaceToPlatform[binaryInterface];
     _types = types;
-
     if (types != null) {
       _setDataModel(types["int"].dataModel);
     }
@@ -88,47 +90,6 @@ class DynamicLibrary {
 
     _types = types;
     _setDataModel(types["int"].dataModel);
-  }
-
-  /**
-   * Links to the function prototypes declared in specified header files.
-   * Does not declare anything. The header files should be declared before the linkage.
-   *
-   * Parameters:
-   *   [List<String>] headers
-   *   A list of names of header files.
-   */
-  void link(Iterable<String> headers) {
-    if (headers == null) {
-      throw new ArgumentError.notNull("headers");
-    }
-
-    var files = new Set<String>();
-    for (var header in headers) {
-      if (header == null) {
-        throw new ArgumentError("List of the headers contains an invalid elements");
-      }
-
-      files.add(header);
-    }
-
-    if (types == null) {
-      _errorTypesNotDefined();
-    }
-
-    var helper = new BinaryTypeHelper(types);
-    var prototypes = helper.prototypes;
-    for (var name in prototypes.keys) {
-      var prototype = prototypes[name];
-      var filename = prototype.filename;
-      if (files.contains(filename)) {
-        var alias = prototype.alias;
-        var type = prototype.type;
-        // TODO: Add support of individual calling convention
-        function(name, type.returnType, type.parameters,
-            alias: alias, convention: _convention, variadic: type.variadic);
-      }
-    }
   }
 
   /**
@@ -165,11 +126,11 @@ class DynamicLibrary {
      *   [bool] variadic
      *   Indicates that the function can accept a variable number of arguments.
      *
-     *   [CallingConventions] convention
+     *   [CallingConvention] convention
      *   Calling convention.
      */
   void function(String name, BinaryType returnType, List<BinaryType> parameters,
-      {String alias, CallingConventions convention, bool variadic: false}) {
+      {String alias, CallingConvention convention, bool variadic: false}) {
     if (name == null) {
       throw new ArgumentError.notNull("name");
     }
@@ -189,7 +150,7 @@ class DynamicLibrary {
     if (convention == null) {
       convention = _convention;
       if (convention == null) {
-        convention = CallingConventions.DEFAULT;
+        convention = CallingConvention.DEFAULT;
       }
     }
 
@@ -211,13 +172,14 @@ class DynamicLibrary {
     var functionType = new FunctionType(name, returnType, parameters, variadic, dataModel);
     var address = Unsafe.librarySymbol(handle, alias);
     if (address == 0) {
-      throw new ArgumentError("Symbol '$alias' not found.");
+      throw new ArgumentError("Symbol '$alias' not found in '$filename'.");
     }
 
+    var abi = BinaryInteropHelper.callingConventionToAbi[convention];
     if (_lazy) {
-      _declaredFunctions[name] = new _FunctionInfo(address, functionType, convention);
+      _declaredFunctions[name] = new _FunctionInfo(address, functionType, abi);
     } else {
-      _functions[name] = new ForeignFunction(address, functionType, convention, binaryInterface, _systemDataModel);
+      _functions[name] = new ForeignFunction(address, functionType, abi, _platform, _systemDataModel);
     }
   }
 
@@ -391,6 +353,47 @@ class DynamicLibrary {
   }
 
   /**
+   * Links to the function prototypes declared in specified header files.
+   * Does not declare anything. The header files should be declared before the linkage.
+   *
+   * Parameters:
+   *   [List<String>] headers
+   *   A list of names of header files.
+   */
+  void link(Iterable<String> headers) {
+    if (headers == null) {
+      throw new ArgumentError.notNull("headers");
+    }
+
+    var files = new Set<String>();
+    for (var header in headers) {
+      if (header == null) {
+        throw new ArgumentError("List of the headers contains an invalid elements");
+      }
+
+      files.add(header);
+    }
+
+    if (types == null) {
+      _errorTypesNotDefined();
+    }
+
+    var helper = new BinaryTypeHelper(types);
+    var prototypes = helper.prototypes;
+    for (var name in prototypes.keys) {
+      var prototype = prototypes[name];
+      var filename = prototype.filename;
+      if (files.contains(filename)) {
+        var alias = prototype.alias;
+        var type = prototype.type;
+        // TODO: Add support of individual calling convention
+        function(name, type.returnType, type.parameters,
+            alias: alias, convention: _convention, variadic: type.variadic);
+      }
+    }
+  }
+
+  /**
    * Returns the address of the symbol.
    *
    * Parameters:
@@ -421,8 +424,7 @@ class DynamicLibrary {
     if (_lazy) {
       var info = _declaredFunctions[name];
       if (info != null) {
-        function =
-            new ForeignFunction(info.address, info.functionType, info.convention, binaryInterface, _systemDataModel);
+        function = new ForeignFunction(info.address, info.functionType, info.convention, _platform, _systemDataModel);
         _functions[name] = function;
         _declaredFunctions[name] = null;
       }
@@ -440,7 +442,7 @@ class DynamicLibrary {
   }
 
   void _errorTypesNotDefined() {
-    throw new StateError("Binary types are not defined for '$filename'");
+    throw new StateError("Binary types not defined for '$filename'");
   }
 
   void _errorUnableToConvert(String subject, int index, BinaryType binaryType) {
@@ -459,14 +461,14 @@ class DynamicLibrary {
    *   [String] filename
    *   Path to the dynamic library.
    *
-   *   [BinaryInterfaces] abi
+   *   [BinaryInterface] abi
    *   Binary interface
    *
    *   [BinaryTypes] types
    *   Binary types
    */
   static DynamicLibrary load(String filename,
-      {BinaryInterfaces abi, CallingConventions convention, bool lazy: true, BinaryTypes types}) {
+      {BinaryInterface abi, CallingConvention convention, bool lazy: true, BinaryTypes types}) {
     if (filename == null) {
       throw new ArgumentError.notNull("filename");
     }
@@ -490,66 +492,12 @@ class DynamicLibrary {
 
     return new DynamicLibrary._internal(handle, filename, abi, convention: convention, lazy: lazy, types: types);
   }
-
-  static BinaryInterfaces _getSystemInterface() {
-    var operatingSystem = Platform.operatingSystem;
-    var userSpaceBitness = SysInfo.userSpaceBitness;
-    switch (SysInfo.processors.first.architecture) {
-      case ProcessorArchitecture.ARM:
-        switch (operatingSystem) {
-          case "android":
-            return BinaryInterfaces.ARM_ANDROID;
-          case "linux":
-            return BinaryInterfaces.ARM_UNIX;
-        }
-
-        break;
-      case ProcessorArchitecture.X86:
-        switch (operatingSystem) {
-          case "android":
-          case "linux":
-          case "macos":
-            return BinaryInterfaces.X86_UNIX;
-          case "windows":
-            return BinaryInterfaces.X86_WINDOWS;
-        }
-
-        break;
-      case ProcessorArchitecture.X86_64:
-        switch (operatingSystem) {
-          case "android":
-          case "linux":
-          case "macos":
-            switch (userSpaceBitness) {
-              case 32:
-                return BinaryInterfaces.X86_UNIX;
-              case 64:
-                return BinaryInterfaces.X86_64_UNIX;
-            }
-
-            break;
-          case "windows":
-            switch (userSpaceBitness) {
-              case 32:
-                return BinaryInterfaces.X86_WINDOWS;
-              case 64:
-                return BinaryInterfaces.X86_64_WINDOWS;
-            }
-
-            break;
-        }
-
-        break;
-    }
-
-    return null;
-  }
 }
 
 class _FunctionInfo {
   final int address;
 
-  final CallingConventions convention;
+  final FfiAbi convention;
 
   final FunctionType functionType;
 

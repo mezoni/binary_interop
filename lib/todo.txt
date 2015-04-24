@@ -1,3 +1,0 @@
-Add support of "Bool" binary types to:
-- DynamicLibrary
-- ForeignFunction

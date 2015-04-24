@@ -1,5 +1,5 @@
 name: binary_interop
-version: 0.0.30
+version: 0.0.31
 author: Andrew Mezoni <andrew.mezoni@gmail.com>
 description: Binary interop is a library that allows load shared libraries, invoke their functions and get access to their data.
 homepage: https://github.com/mezoni/binary_interop
@@ -7,7 +7,9 @@ dependencies:
   binary_types: any
   file_utils: any
   libc: any
-  libffi_binaries: any
+  libffi_binaries: '>=0.6.0<0.7.0'
+  libffi6_extension: any
+  libffi6_support: any
   path: any
   pub_semver: any
   system_info: any

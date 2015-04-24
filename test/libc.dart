@@ -58,6 +58,4 @@ class Libc {
   dynamic strlen(s) {
     return _library.invoke("strlen", [s]);
   }
-
 }
-
