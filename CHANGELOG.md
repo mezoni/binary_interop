@@ -1,3 +1,7 @@
+## 0.0.32
+
+- Made adaptations to the new version of package `test`
+
 ## 0.0.31
 
 - Added support of the `binary callbacks` (libffi closures)

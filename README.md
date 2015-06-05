@@ -3,7 +3,7 @@ binary_interop
 
 Binary interop is a library that allows load shared libraries, invoke their functions and get access to their data.
 
-Version: 0.0.31
+Version: 0.0.32
 
 [Donate to binary interop for dart](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=binary.dart@gmail.com&item_name=binary.interop.for.dart&currency_code=USD)
 
@@ -40,45 +40,47 @@ import "dart:io";
 
 import "package:libc/headers.dart";
 import "package:binary_interop/binary_interop.dart";
-import "package:unittest/unittest.dart";
+import "package:test/test.dart";
 
 import "libc.dart";
 
 void main() {
-  var helper = new BinaryTypeHelper(_t);
-  helper.addHeaders(LIBC_HEADERS);
-  helper.addHeaders(HEADERS);
-  helper.declare(HEADERS.keys.first);
-  var libc = loadLibc();
+  test("Test binary interop", () {
+    var helper = new BinaryTypeHelper(_t);
+    helper.addHeaders(LIBC_HEADERS);
+    helper.addHeaders(HEADERS);
+    helper.declare(HEADERS.keys.first);
+    var libc = loadLibc();
 
-  // Strlen
-  var string = "0123456789";
-  var length = libc.strlen(string);
-  expect(length, string.length, reason: "Call 'strlen'");
+    // Strlen
+    var string = "0123456789";
+    var length = libc.strlen(string);
+    expect(length, string.length, reason: "Call 'strlen'");
 
-  string = "Hello Dartisans 2015\n";
+    string = "Hello Dartisans 2015\n";
 
-  // printf
-  length = libc.printf("Hello %s %i\n", ["Dartisans", 2015]);
-  expect(length, string.length, reason: "Wrong length");
+    // printf
+    length = libc.printf("Hello %s %i\n", ["Dartisans", 2015]);
+    expect(length, string.length, reason: "Wrong length");
 
-  // sprintf
-  var buffer = alloc(_t["char[500]"]);
-  length = libc.snprintf(buffer, 500, "Hello %s %i\n", ["Dartisans", 2015]);
-  var string2 = helper.readString(buffer);
-  expect(length, string.length, reason: "Wrong length");
-  expect(string, string2, reason: "Wrong string");
+    // sprintf
+    var buffer = alloc(_t["char[500]"]);
+    length = libc.snprintf(buffer, 500, "Hello %s %i\n", ["Dartisans", 2015]);
+    var string2 = helper.readString(buffer);
+    expect(length, string.length, reason: "Wrong length");
+    expect(string, string2, reason: "Wrong string");
 
-  // sprintf (w/o direct alloc binary buffer)
-  var buffer2 = new List<int>(500);
-  length = libc.snprintf(buffer2, buffer2.length, "Hello %s %i\n", ["Dartisans", 2015]);
-  string2 = stringFromArray(buffer2);
-  expect(length, string.length, reason: "Wrong length");
-  expect(string, string2, reason: "Wrong string");
+    // sprintf (w/o direct alloc binary buffer)
+    var buffer2 = new List<int>(500);
+    length = libc.snprintf(buffer2, buffer2.length, "Hello %s %i\n", ["Dartisans", 2015]);
+    string2 = stringFromArray(buffer2);
+    expect(length, string.length, reason: "Wrong length");
+    expect(string, string2, reason: "Wrong string");
 
-  // printf
-  length = libc.printf("True is %i\n", [true]);
-  expect(length, 10, reason: "Wrong length");
+    // printf
+    length = libc.printf("True is %i\n", [true]);
+    expect(length, 10, reason: "Wrong length");
+  });
 }
 
 final BinaryTypes _t = new BinaryTypes();
