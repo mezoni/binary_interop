@@ -6,7 +6,7 @@ const String _header = '''
 #include <stddef.h>
 
 int printf(const char *format, ...);
-#if OS == windows
+#if __OS == windows
 int snprintf(char *s, size_t n, const char *format, ...) __attribute__((alias(_sprintf_p)));
 #else
 int snprintf(char *s, size_t n, const char *format, ...);

@@ -1,3 +1,7 @@
+## 0.0.33
+
+- Minor correction in test
+
 ## 0.0.32
 
 - Made adaptations to the new version of package `test`
