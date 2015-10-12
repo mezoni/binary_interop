@@ -1,5 +1,6 @@
 ## 0.0.33
 
+- Added support of binary variables
 - Minor correction in test
 
 ## 0.0.32

@@ -38,6 +38,8 @@ class DynamicLibrary {
 
   BinaryTypes _types;
 
+  Map<String, BinaryData> _variables = <String, BinaryData>{};
+
   DynamicLibrary._internal(int handle, this.filename, this.binaryInterface,
       {CallingConvention convention, bool lazy, BinaryTypes types}) {
     if (handle == null) {
@@ -391,6 +393,22 @@ class DynamicLibrary {
             alias: alias, convention: _convention, variadic: type.variadic);
       }
     }
+
+    var variables = helper.variables;
+    for (var variable in variables.values) {
+      var name = variable.name;
+      var filename = variable.filename;
+      if (files.contains(filename)) {
+        var type = variable.type;
+        var address = symbol(name);
+        if (address == 0) {
+          throw new StateError("Variable '$name' not found in '${this.filename}'.");
+        }
+
+        var data = type.extern(address);
+        _variables[name] = data;
+      }
+    }
   }
 
   /**
@@ -401,7 +419,7 @@ class DynamicLibrary {
    *   Name to get the address.
    */
   int symbol(String name) {
-    if (symbol == null) {
+    if (name == null) {
       throw new ArgumentError.notNull("name");
     }
 
@@ -419,6 +437,25 @@ class DynamicLibrary {
    */
   String toString() => filename;
 
+  /**
+   * Returns the external variable with specified name.
+   *
+   * Parameters:
+   *   [String] name
+   *   A name of variable.
+   */
+  BinaryData variable(String name) {
+    if (name == null) {
+      throw new ArgumentError.notNull("name");
+    }
+
+    if (_handle == null) {
+      _errorLibraryNotLoaded();
+    }
+
+    return _variables[name];
+  }
+
   ForeignFunction _compile(String name) {
     ForeignFunction function;
     if (_lazy) {
@@ -431,7 +468,7 @@ class DynamicLibrary {
     }
 
     if (function == null) {
-      throw new ArgumentError("Function '$name' not found.");
+      throw new ArgumentError("Function '$name' not found in '$filename'.");
     }
 
     return function;
